@@ -10,9 +10,9 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 
 //createApp(App).mount('#app')
 
-axios.defaults.baseURL="http://localhost:5173"
+axios.defaults.baseURL = "http://localhost:8080"
 
-const app=createApp(App)
+const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)

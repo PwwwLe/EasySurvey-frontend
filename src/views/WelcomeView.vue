@@ -1,72 +1,241 @@
-<script>
-export default {
-    data() {
-        return {
-            isActive: false,
-        };
-    },
-    methods: {
-        switchToLogin() {
-            this.isActive = false;
-        },
-        switchToRegister() {
-            this.isActive = true;
-        },
-        signUp() {
-            // Handle sign up logic here
-        },
-        signIn() {
-            // Handle sign in logic here
-        },
-    },
+<script setup>
+
+import { reactive } from "vue";
+import { User, Lock } from "@element-plus/icons-vue";
+import { login } from "@/net";
+import { ref } from 'vue';
+import router from "@/router";
+
+
+//登录方面
+const loginForm = reactive({
+    username: '',
+    password: '',
+})
+
+const loginRule = {
+    username: [
+        { required: true, message: '请输入用户名' }
+    ],
+    password: [
+        { required: true, message: '请输入密码' }
+    ]
+}
+
+const loginFormRef = ref()
+
+function userLogin() {
+    loginFormRef.value.validate((isValid) => {
+        if (isValid) {
+            login(loginForm.username, loginForm.password, () => { router.push('/index') })
+        }
+    });
+}
+
+const isActive = ref(false);
+
+const switchToLogin = () => {
+    isActive.value = false;
 };
+
+const switchToRegister = () => {
+    isActive.value = true;
+};
+
+const signUp = () => {
+    // Handle sign up logic here
+};
+
+const signIn = () => {
+    // Handle sign in logic here
+};
+
+//注册方面
+const registerForm = reactive({
+    username: '',
+    password: '',
+    password_repeat: '',
+    email: '',
+    code: ''
+})
+
+const coldTime = ref(0)
+const registerFormRef = ref()
+
+function askCode() {
+    if (isEmailValid.value) {
+        coldTime.value = 60;
+        get(`/api/auth/ask-code?email=${registerForm.email}&type=register`, () => {
+            ElMessage.success(`验证码已发送到邮箱${registerForm.email}，请注意查收`);
+            const timer = setInterval(() => {
+                if (coldTime.value > 0) {
+                    coldTime.value--;
+                } else {
+                    clearInterval(timer); // 清除定时器
+                }
+            }, 1000);
+        }, (message) => {
+            ElMessage.error(message);
+            coldTime.value = 0;
+        });
+    } else {
+        ElMessage.warning("请输入正确的电子邮件地址");
+    }
+}
+
+const validateUsername = (rule, value, callback) => {
+    if (value === '') {
+        callback(new Error('请输入用户名'))
+    } else if (!/^[a-zA-Z0-9\u4e00-\u9fa5]+$/.test(value)) {
+        callback(new Error('用户名不能包含特殊字符,只能是中/英文'))
+    } else {
+        callback()
+    }
+}
+
+const validatePassword = (rule, value, callback) => {
+    if (value === '') {
+        callback(new Error('请再次输入密码'))
+    } else if (value !== form.password) {
+        callback(new Error("两次输入的密码不一致"))
+    } else {
+        callback()
+    }
+}
+
+const registerRule = {
+    username: [
+        { validator: validateUsername, trigger: ['blur', 'change'] }
+    ],
+    password: [
+        { required: true, message: '请输入密码', trigger: 'blur' },
+        { min: 6, max: 16, message: '密码的长度必须在6-16个字符之间', trigger: ['blur', 'change'] }
+    ],
+    password_repeat: [
+        { validator: validatePassword, trigger: ['blur', 'change'] },
+    ],
+    email: [
+        { required: true, message: '请输入邮件地址', trigger: 'blur' },
+        { type: 'email', message: '请输入合法的电子邮件地址', trigger: ['blur', 'change'] }
+    ],
+    code: [
+        { required: true, message: '请输入获取的验证码', trigger: 'blur' },
+    ]
+}
+
+const register = () => {
+    registerFormRef.value.validate((valid) => {
+        if (valid) {
+            post('/api/auth/register', {
+                username: registerForm.username,
+                password: registerForm.password,
+                email: registerForm.email,
+                code: registerForm.code
+            }, () => {
+                ElMessage.success('注册成功，欢迎加入我们')
+                router.push("/")
+            })
+        } else {
+            ElMessage.warning('请完整填写注册表单内容')
+        }
+    })
+}
+
+const isEmailValid = computed(() => /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$/.test(registerForm.email))
+
 </script>
 
 <template>
-    <div class="container" :class="{ active: isActive }">
-        <div class="form-container sign-up">
-            <form>
-                <h1>Create Account</h1>
-                <div class="social-icons">
-                    <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
-                    <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" class="icon"><i class="fa-brands fa-github"></i></a>
-                    <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
-                </div>
-                <span>or use your email for registration</span>
-                <input type="text" placeholder="Name">
-                <input type="email" placeholder="Email">
-                <input type="password" placeholder="Password">
-                <button @click.prevent="signUp">Sign Up</button>
-            </form>
-        </div>
-        <div class="form-container sign-in">
-            <form>
-                <h1>Sign In</h1>
-                <div class="social-icons">
-                    <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
-                    <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" class="icon"><i class="fa-brands fa-github"></i></a>
-                    <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
-                </div>
-                <span>or use your email password</span>
-                <input type="email" placeholder="Email">
-                <input type="password" placeholder="Password">
-                <a href="#">Forget Your Password?</a>
-                <button @click.prevent="signIn">Sign In</button>
-            </form>
-        </div>
-        <div class="toggle-container">
-            <div class="toggle" :class="{ active: isActive }">
-                <div class="toggle-panel toggle-left">
-                    <h1>Welcome Back!</h1>
-                    <p>Enter your personal details to use all site features</p>
-                    <button class="hidden" id="login" @click="switchToLogin">Sign In</button>
-                </div>
-                <div class="toggle-panel toggle-right">
-                    <h1>Hello, Friend!</h1>
-                    <p>Register with your personal details to use all site features</p>
-                    <button class="hidden" id="register" @click="switchToRegister">Sign Up</button>
+    <div class="page-center">
+        <div class="container" :class="{ active: isActive }">
+            <div class="form-container sign-up">
+                <form>
+                    <h1>创建账户</h1>
+                    <span>注册你的用户名和密码</span>
+                    <!-- <input type="text" placeholder="UserName">
+                    <input type="email" placeholder="Email">
+                    <input type="password" placeholder="Password">
+                    <button @click.prevent="signUp">注册</button> -->
+
+                    <!-- <el-form :model="registerForm" :rules="registerRule" ref="registerFormRef">
+                        <el-form-item prop="username">
+                            <el-input v-model="registerForm.username" maxlength="10" type="text" placeholder="用户名">
+                                <template #prefix>
+                                    <el-icon>
+                                        <User />
+                                    </el-icon>
+                                </template>
+</el-input>
+</el-form-item>
+
+<el-form-item prop="password">
+    <el-input v-model="registerForm.password" maxlength="20" type="password" placeholder="密码">
+        <template #prefix>
+                                    <el-icon>
+                                        <Lock />
+                                    </el-icon>
+                                </template>
+    </el-input>
+</el-form-item>
+
+<el-form-item prop="password_repeat">
+    <el-input v-model="registerForm.password_repeat" maxlength="20" type="password" placeholder="确认密码">
+        <template #prefix>
+                                    <el-icon>
+                                        <Lock />
+                                    </el-icon>
+                                </template>
+    </el-input>
+</el-form-item>
+</el-form> -->
+                </form>
+            </div>
+            <div class="form-container sign-in">
+                <form>
+                    <h1>登录</h1>
+                    <span>使用你的用户名和密码</span>
+                    <!-- <input type="text" placeholder="Username">
+                    <input type="password" placeholder="Password"> -->
+                    <el-form :model="loginForm" :rules="loginRule" ref="loginFormRef">
+                        <el-form-item prop="username">
+                            <el-input v-model="loginForm.username" maxlength="25" type="text" placeholder="用户名">
+                                <template #prefix>
+                                    <el-icon>
+                                        <User />
+                                    </el-icon>
+                                </template>
+                            </el-input>
+                        </el-form-item>
+
+                        <el-form-item prop="password">
+                            <el-input v-model="loginForm.password" type="password" maxlength="20" placeholder="密码">
+                                <template #prefix>
+                                    <el-icon>
+                                        <Lock />
+                                    </el-icon>
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                    </el-form>
+                    <div style="margin-top: 20px">
+                        <el-button @click="userLogin" style="width: 270px" type="success" plain>立即登录</el-button>
+                    </div>
+                    <!-- <a href="#">忘记密码?</a>
+                    <button @click.prevent="signIn">登录</button> -->
+                </form>
+            </div>
+            <div class="toggle-container">
+                <div class="toggle" :class="{ active: isActive }">
+                    <div class="toggle-panel toggle-left">
+                        <h1>欢迎回来！</h1>
+                        <p>登录以使用网站所有功能</p>
+                        <button class="hidden" id="login" @click="switchToLogin">登录</button>
+                    </div>
+                    <div class="toggle-panel toggle-right">
+                        <h1>你好!</h1>
+                        <p>注册账号以使用网站所有功能</p>
+                        <button class="hidden" id="register" @click="switchToRegister">注册</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -91,6 +260,15 @@ body {
     justify-content: center;
     flex-direction: column;
     height: 100vh;
+    margin: 0;
+}
+
+.page-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100%;
 }
 
 .container {

@@ -13,6 +13,16 @@ const router = createRouter({
                 // 页面标题title
                 title: '问卷调查系统'
             }
+        },
+        {
+            path: '/index',
+            name: 'index',
+            //redirect: '/index/questionnaire-filling',
+            component: () => import('@/views/IndexView.vue'),
+            meta: {
+                // 页面标题title
+                title: '首页-问卷调查系统'
+            }
         }
     ]
 })
