@@ -1,11 +1,10 @@
 <script setup>
 
-import { reactive } from "vue";
-import { User, Lock } from "@element-plus/icons-vue";
-import { login } from "@/net";
-import { ref } from 'vue';
+import { computed, reactive, ref } from "vue";
+import { ChatDotSquare, Lock, Message, User } from "@element-plus/icons-vue";
+import { login, get, post } from "@/net";
+import { ElMessage } from "element-plus";
 import router from "@/router";
-
 
 //登录方面
 const loginForm = reactive({
@@ -42,62 +41,35 @@ const switchToRegister = () => {
     isActive.value = true;
 };
 
-const signUp = () => {
-    // Handle sign up logic here
-};
-
-const signIn = () => {
-    // Handle sign in logic here
-};
-
 //注册方面
 const registerForm = reactive({
     username: '',
     password: '',
-    password_repeat: '',
-    email: '',
-    code: ''
+    password_repeat: ''
 })
 
 const coldTime = ref(0)
 const registerFormRef = ref()
 
-function askCode() {
-    if (isEmailValid.value) {
-        coldTime.value = 60;
-        get(`/api/auth/ask-code?email=${registerForm.email}&type=register`, () => {
-            ElMessage.success(`验证码已发送到邮箱${registerForm.email}，请注意查收`);
-            const timer = setInterval(() => {
-                if (coldTime.value > 0) {
-                    coldTime.value--;
-                } else {
-                    clearInterval(timer); // 清除定时器
-                }
-            }, 1000);
-        }, (message) => {
-            ElMessage.error(message);
-            coldTime.value = 0;
-        });
-    } else {
-        ElMessage.warning("请输入正确的电子邮件地址");
-    }
-}
-
-const validateUsername = (rule, value, callback) => {
+const validateUsername = (registerRule, value, callback) => {
     if (value === '') {
         callback(new Error('请输入用户名'))
+        console.warn(`请输入用户名`)
     } else if (!/^[a-zA-Z0-9\u4e00-\u9fa5]+$/.test(value)) {
         callback(new Error('用户名不能包含特殊字符,只能是中/英文'))
+        console.warn(`用户名不能包含特殊字符,只能是中/英文`)
     } else {
         callback()
     }
 }
 
-const validatePassword = (rule, value, callback) => {
+const validatePassword = (registerRule, value, callback) => {
     if (value === '') {
         callback(new Error('请再次输入密码'))
-    } else if (value !== form.password) {
+        console.warn(`请再次输入密码`)
+    } else if (value !== registerForm.password) {
         callback(new Error("两次输入的密码不一致"))
+        console.warn(`两次输入的密码不一致${value},${registerForm.password}`)
     } else {
         callback()
     }
@@ -113,36 +85,27 @@ const registerRule = {
     ],
     password_repeat: [
         { validator: validatePassword, trigger: ['blur', 'change'] },
-    ],
-    email: [
-        { required: true, message: '请输入邮件地址', trigger: 'blur' },
-        { type: 'email', message: '请输入合法的电子邮件地址', trigger: ['blur', 'change'] }
-    ],
-    code: [
-        { required: true, message: '请输入获取的验证码', trigger: 'blur' },
     ]
 }
 
 const register = () => {
     registerFormRef.value.validate((valid) => {
         if (valid) {
-            post('/api/auth/register', {
-                username: registerForm.username,
+            console.log(`注册表单有效`);
+            post('/register', {
+                name: registerForm.username,
                 password: registerForm.password,
-                email: registerForm.email,
-                code: registerForm.code
             }, () => {
                 ElMessage.success('注册成功，欢迎加入我们')
+                console.warn(`注册成功，欢迎加入我们`)
                 router.push("/")
             })
         } else {
             ElMessage.warning('请完整填写注册表单内容')
+            console.warn(`请完整填写注册表单内容`)
         }
     })
 }
-
-const isEmailValid = computed(() => /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$/.test(registerForm.email))
-
 </script>
 
 <template>
@@ -150,14 +113,14 @@ const isEmailValid = computed(() => /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$/.test(reg
         <div class="container" :class="{ active: isActive }">
             <div class="form-container sign-up">
                 <form>
-                    <h1>创建账户</h1>
-                    <span>注册你的用户名和密码</span>
+                    <h1 style="margin-bottom: 20px;">创建账户</h1>
+                    <span style="margin-bottom: 20px;">注册你的用户名和密码</span>
                     <!-- <input type="text" placeholder="UserName">
                     <input type="email" placeholder="Email">
                     <input type="password" placeholder="Password">
                     <button @click.prevent="signUp">注册</button> -->
 
-                    <!-- <el-form :model="registerForm" :rules="registerRule" ref="registerFormRef">
+                    <el-form :model="registerForm" :rules="registerRule" ref="registerFormRef">
                         <el-form-item prop="username">
                             <el-input v-model="registerForm.username" maxlength="10" type="text" placeholder="用户名">
                                 <template #prefix>
@@ -165,35 +128,39 @@ const isEmailValid = computed(() => /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$/.test(reg
                                         <User />
                                     </el-icon>
                                 </template>
-</el-input>
-</el-form-item>
+                            </el-input>
+                        </el-form-item>
 
-<el-form-item prop="password">
-    <el-input v-model="registerForm.password" maxlength="20" type="password" placeholder="密码">
-        <template #prefix>
+                        <el-form-item prop="password">
+                            <el-input v-model="registerForm.password" maxlength="20" type="password" placeholder="密码">
+                                <template #prefix>
                                     <el-icon>
                                         <Lock />
                                     </el-icon>
                                 </template>
-    </el-input>
-</el-form-item>
+                            </el-input>
+                        </el-form-item>
 
-<el-form-item prop="password_repeat">
-    <el-input v-model="registerForm.password_repeat" maxlength="20" type="password" placeholder="确认密码">
-        <template #prefix>
+                        <el-form-item prop="password_repeat">
+                            <el-input v-model="registerForm.password_repeat" maxlength="20" type="password"
+                                placeholder="确认密码">
+                                <template #prefix>
                                     <el-icon>
                                         <Lock />
                                     </el-icon>
                                 </template>
-    </el-input>
-</el-form-item>
-</el-form> -->
+                            </el-input>
+                        </el-form-item>
+                    </el-form>
+                    <div style="margin-top: 20px;">
+                        <el-button @click="register" style="width: 270px" type="warning" plain>注册</el-button>
+                    </div>
                 </form>
             </div>
             <div class="form-container sign-in">
                 <form>
-                    <h1>登录</h1>
-                    <span>使用你的用户名和密码</span>
+                    <h1 style="margin-bottom: 20px;">登录</h1>
+                    <span style="margin-bottom: 20px;">使用你的用户名和密码</span>
                     <!-- <input type="text" placeholder="Username">
                     <input type="password" placeholder="Password"> -->
                     <el-form :model="loginForm" :rules="loginRule" ref="loginFormRef">
@@ -343,8 +310,9 @@ body {
 .form-container {
     position: absolute;
     top: 0;
-    height: 100%;
+    /* height: 100%; */
     transition: all 0.6s ease-in-out;
+    margin-top: 15%;
 }
 
 .sign-in {

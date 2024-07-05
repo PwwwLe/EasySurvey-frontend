@@ -3,7 +3,7 @@ import { ElMessage } from "element-plus";
 
 const authItemName = "access_token"
 
-const defaultFailure = (message, code, url) => {
+const defaultFailure = (message, code, url, data) => {
     console.warn(`请求地址: ${url}, 状态码: ${code}, 错误消息: ${message}`)
     ElMessage.warning(message)
 }
@@ -15,11 +15,15 @@ const defaultError = (err) => {
 
 
 function internalPost(url, data, header, success, failure, error = defaultError) {
+    console.log(url)
+    console.log(data)
+    console.log(header)
+
     axios.post(url, data, { headers: header }).then(({ data }) => {
         if (data.code === 200) {
             success(data.data)
         } else {
-            defaultFailure(data.message, data.code, url)
+            defaultFailure(data.message, data.code, url, data)
         }
     }).catch(err => error(err))
 }
@@ -58,8 +62,8 @@ function deleteAccessToken() {
 }
 
 function login(username, password, success, failure = defaultFailure) {
-    internalPost('login', {
-        username: username,
+    internalPost('/login', {
+        name: username,
         password: password,
     }, {
         'Content-Type': 'application/x-www-form-urlencoded'
