@@ -24,11 +24,13 @@ const loginRule = {
 const loginFormRef = ref()
 
 function userLogin() {
-    loginFormRef.value.validate((isValid) => {
-        if (isValid) {
-            login(loginForm.username, loginForm.password, () => { router.push('/index') })
-        }
-    });
+    // loginFormRef.value.validate((isValid) => {
+    //     if (isValid) {
+    //         login(loginForm.username, loginForm.password, () => { router.push('/index') })
+    //     }
+    // });
+    //直接跳到主页，调试用
+    router.push('/index')
 }
 
 const isActive = ref(false);

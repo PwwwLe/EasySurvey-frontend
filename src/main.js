@@ -8,6 +8,9 @@ import ECharts from 'vue-echarts';
 import { createPinia } from "pinia";
 import 'element-plus/theme-chalk/dark/css-vars.css'
 
+import ElementPlus from 'element-plus';
+import 'element-plus/dist/index.css'
+
 //createApp(App).mount('#app')
 
 axios.defaults.baseURL = "http://localhost:8080"
@@ -16,6 +19,7 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
+app.use(ElementPlus)
 
 router.beforeEach((to, from, next) => {
     /* 路由发生变化修改页面title */

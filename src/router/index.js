@@ -22,7 +22,27 @@ const router = createRouter({
             meta: {
                 // 页面标题title
                 title: '首页-问卷调查系统'
-            }
+            },
+            children: [
+                {
+                    path: 'completedQuestionnaire',
+                    name: 'completedQuestionnaire',
+                    meta: {
+                        // 页面标题title
+                        title: '已填写的问卷-问卷调查系统'
+                    },
+                    component: () => import('@/views/questionnaire/completedQuestionnaire.vue')
+                },
+                {
+                    path: 'unfilledQuestionnaire',
+                    name: 'unfilledQuestionnaire',
+                    meta: {
+                        // 页面标题title
+                        title: '未填写的问卷-问卷调查系统'
+                    },
+                    component: () => import('@/views/questionnaire/unfilledQuestionnaire.vue'),
+                },
+            ]
         }
     ]
 })
