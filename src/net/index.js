@@ -20,7 +20,7 @@ function internalPost(url, data, header, success, failure, error = defaultError)
     console.log(header)
 
     axios.post(url, data, { headers: header }).then(({ data }) => {
-        if (data.code === 200) {
+        if (data.code === 1) {
             success(data.data)
         } else {
             defaultFailure(data.message, data.code, url, data)
@@ -61,17 +61,25 @@ function deleteAccessToken() {
     sessionStorage.removeItem(authItemName)
 }
 
-function login(username, password, success, failure = defaultFailure) {
-    internalPost('/login', {
+function login(username, password, role, success, failure = defaultFailure) {
+    axios.post('/login', {
         name: username,
         password: password,
     }, {
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }, (data) => {
-        storeAccessToken(data.token, data.expireDate)
-        ElMessage.success(`登陆成功,欢迎 ${data.username} 进入!`)
-        success(data)
-    }, failure)
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(({ data }) => {
+        console.log(data)
+        console.log(role)
+        if (data.code === 1 && data.data.role === Number(role)) {
+            storeAccessToken(data.data.token, data.data.expireDate)
+            ElMessage.success(`登陆成功,欢迎 ${data.data.username} 进入!`)
+            success(data.data)
+        } else {
+            defaultFailure(data.data.message, data.data.code, url, data.data)
+        }
+    }).catch(err => error(err))
 }
 
 /**

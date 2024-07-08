@@ -13,7 +13,7 @@ import 'element-plus/dist/index.css'
 
 //createApp(App).mount('#app')
 
-axios.defaults.baseURL = "http://localhost:8080"
+axios.defaults.baseURL = "http://47.121.187.213:8080"
 
 const app = createApp(App)
 

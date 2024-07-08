@@ -37,29 +37,53 @@ const loading = ref(true)
         <el-container>
             <el-aside width="230px" class="sidebar">
                 <el-menu style="height: 100%" router :default-active="$route.path">
-                    <template #title>
-                        <el-icon>
-                            <Memo />
-                        </el-icon>
-                        <span><b>调查问卷</b></span>
-                    </template>
                     <el-menu-item index="/index/unfilledQuestionnaire">
                         <template #title>
+                            <el-icon>
+                                <Memo />
+                            </el-icon>
                             未填写的问卷
                         </template>
                     </el-menu-item>
                     <el-menu-item index="/index/completedQuestionnaire">
                         <template #title>
+                            <el-icon>
+                                <Memo />
+                            </el-icon>
                             已填写的问卷
                         </template>
                     </el-menu-item>
+                    <el-sub-menu index="1">
+                        <template #title>
+                            <el-icon>
+                                <Setting />
+                            </el-icon>
+                            <span><b>设置</b></span>
+                        </template>
+                        <el-menu-item index="/index/user-setting">
+                            <template #title>
+                                基本资料
+                            </template>
+                        </el-menu-item>
+                        <el-menu-item index="/index/user-setting">
+                            <template #title>
+                                更换头像
+                            </template>
+                        </el-menu-item>
+                        <el-menu-item index="/index/user-setting">
+                            <template #title>
+                                重置密码
+                            </template>
+                        </el-menu-item>
+                    </el-sub-menu>
+
                 </el-menu>
             </el-aside>
 
             <el-main style="padding: 0">
                 <el-scrollbar style="height: calc(100vh - 55px)">
                     <router-view v-slot="{ Component }">
-                        <transition name="el-fade-in-linear" mode="out-in">
+                        <transition name="fade" mode="out-in">
                             <component :is="Component" style="height: 100%" />
                         </transition>
                     </router-view>
@@ -123,5 +147,16 @@ const loading = ref(true)
         width: 100%;
         padding: 20px;
     }
+}
+
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.5s;
+}
+
+.fade-enter,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>

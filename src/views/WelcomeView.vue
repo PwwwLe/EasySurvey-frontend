@@ -10,6 +10,7 @@ import router from "@/router";
 const loginForm = reactive({
     username: '',
     password: '',
+    role: '0',
 })
 
 const loginRule = {
@@ -18,19 +19,22 @@ const loginRule = {
     ],
     password: [
         { required: true, message: '请输入密码' }
+    ],
+    role: [
+        { required: true, message: '请输入role' }
     ]
 }
 
 const loginFormRef = ref()
 
 function userLogin() {
-    // loginFormRef.value.validate((isValid) => {
-    //     if (isValid) {
-    //         login(loginForm.username, loginForm.password, () => { router.push('/index') })
-    //     }
-    // });
+    loginFormRef.value.validate((isValid) => {
+        if (isValid) {
+            login(loginForm.username, loginForm.password, loginForm.role, () => { router.push('/index') })
+        }
+    });
     //直接跳到主页，调试用
-    router.push('/index')
+    //router.push('/index')
 }
 
 const isActive = ref(false);
@@ -115,7 +119,7 @@ const register = () => {
         <div class="container" :class="{ active: isActive }">
             <div class="form-container sign-up">
                 <form>
-                    <h1 style="margin-bottom: 20px;">创建账户</h1>
+                    <h1 style="margin-bottom: 20px;">创建用户账号</h1>
                     <span style="margin-bottom: 20px;">注册你的用户名和密码</span>
                     <!-- <input type="text" placeholder="UserName">
                     <input type="email" placeholder="Email">
@@ -184,6 +188,13 @@ const register = () => {
                                     </el-icon>
                                 </template>
                             </el-input>
+                        </el-form-item>
+
+                        <el-form-item prop="role" style="width: 220px">
+                            <el-select v-model="loginForm.role">
+                                <el-option value="0" label="用户" />
+                                <el-option value="1" label="管理员" />
+                            </el-select>
                         </el-form-item>
                     </el-form>
                     <div style="margin-top: 20px">
