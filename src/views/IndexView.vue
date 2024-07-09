@@ -1,6 +1,6 @@
 <script setup>
 
-import { logout, get } from "@/net";
+import { get } from "@/net";
 import { ref } from "vue";
 import router from "@/router";
 import { useStore } from "@/store";
@@ -60,21 +60,16 @@ const loading = ref(true)
                             </el-icon>
                             <span><b>设置</b></span>
                         </template>
-                        <el-menu-item index="/index/user-setting">
+                        <el-menu-item index="/index/basicInfo">
                             <template #title>
                                 基本资料
                             </template>
                         </el-menu-item>
-                        <el-menu-item index="/index/user-setting">
+                        <!-- <el-menu-item index="/index/user-setting">
                             <template #title>
-                                更换头像
+                                <el-button type="text" @click="userLogout">退出登录</el-button>
                             </template>
-                        </el-menu-item>
-                        <el-menu-item index="/index/user-setting">
-                            <template #title>
-                                重置密码
-                            </template>
-                        </el-menu-item>
+                        </el-menu-item> -->
                     </el-sub-menu>
 
                 </el-menu>
@@ -83,9 +78,9 @@ const loading = ref(true)
             <el-main style="padding: 0">
                 <el-scrollbar style="height: calc(100vh - 55px)">
                     <router-view v-slot="{ Component }">
-                        <transition name="fade" mode="out-in">
-                            <component :is="Component" style="height: 100%" />
-                        </transition>
+                        <!-- <transition name="fade"> -->
+                        <component :is="Component" style="height: 100%" />
+                        <!-- </transition> -->
                     </router-view>
                 </el-scrollbar>
             </el-main>
@@ -149,14 +144,16 @@ const loading = ref(true)
     }
 }
 
-
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.5s;
+    transition: opacity 1s;
 }
 
 .fade-enter,
-.fade-leave-to {
+.fade-leave-to
+
+/* .fade-leave-active in <2.1.8 */
+    {
     opacity: 0;
 }
 </style>

@@ -11,7 +11,7 @@ const router = createRouter({
             component: () => import('@/views/WelcomeView.vue'),
             meta: {
                 // 页面标题title
-                title: '问卷调查系统'
+                title: '问卷易'
             }
         },
         {
@@ -21,7 +21,7 @@ const router = createRouter({
             component: () => import('@/views/IndexView.vue'),
             meta: {
                 // 页面标题title
-                title: '首页-问卷调查系统'
+                title: '首页-问卷易'
             },
             children: [
                 {
@@ -29,7 +29,7 @@ const router = createRouter({
                     name: 'completedQuestionnaire',
                     meta: {
                         // 页面标题title
-                        title: '已填写的问卷-问卷调查系统'
+                        title: '已填写的问卷-问卷易'
                     },
                     component: () => import('@/views/questionnaire/completedQuestionnaire.vue')
                 },
@@ -38,9 +38,27 @@ const router = createRouter({
                     name: 'unfilledQuestionnaire',
                     meta: {
                         // 页面标题title
-                        title: '未填写的问卷-问卷调查系统'
+                        title: '未填写的问卷-问卷易'
                     },
                     component: () => import('@/views/questionnaire/unfilledQuestionnaire.vue'),
+                },
+                {
+                    path: 'basicInfo',
+                    name: 'basicInfo',
+                    meta: {
+                        // 页面标题title
+                        title: '基本资料-问卷易'
+                    },
+                    component: () => import('@/views/settings/basicInfo.vue')
+                },
+                {
+                    path: 'changeBasicInfo',
+                    name: 'changeBasicInfo',
+                    meta: {
+                        // 页面标题title
+                        title: '修改基本资料-问卷调查系统'
+                    },
+                    component: () => import('@/views/settings/changeBasicInfo.vue')
                 },
             ]
         }

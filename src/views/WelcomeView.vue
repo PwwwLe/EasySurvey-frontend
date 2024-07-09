@@ -2,7 +2,7 @@
 
 import { computed, reactive, ref } from "vue";
 import { ChatDotSquare, Lock, Message, User } from "@element-plus/icons-vue";
-import { login, get, post } from "@/net";
+import { login, get, post, Register } from "@/net";
 import { ElMessage } from "element-plus";
 import router from "@/router";
 
@@ -54,7 +54,6 @@ const registerForm = reactive({
     password_repeat: ''
 })
 
-const coldTime = ref(0)
 const registerFormRef = ref()
 
 const validateUsername = (registerRule, value, callback) => {
@@ -98,14 +97,15 @@ const register = () => {
     registerFormRef.value.validate((valid) => {
         if (valid) {
             console.log(`注册表单有效`);
-            post('/register', {
-                name: registerForm.username,
-                password: registerForm.password,
-            }, () => {
-                ElMessage.success('注册成功，欢迎加入我们')
-                console.warn(`注册成功，欢迎加入我们`)
-                router.push("/")
-            })
+            // post('/register', {
+            //     name: registerForm.username,
+            //     password: registerForm.password,
+            // }, () => {
+            //     ElMessage.success('注册成功，欢迎加入我们')
+            //     console.warn(`注册成功，欢迎加入我们`)
+            //     router.push("/")
+            // })
+            Register(registerForm.username, registerForm.password, () => { router.push("/") })
         } else {
             ElMessage.warning('请完整填写注册表单内容')
             console.warn(`请完整填写注册表单内容`)
@@ -170,6 +170,13 @@ const register = () => {
                     <!-- <input type="text" placeholder="Username">
                     <input type="password" placeholder="Password"> -->
                     <el-form :model="loginForm" :rules="loginRule" ref="loginFormRef">
+                        <el-form-item prop="role" style="width: 220px">
+                            <el-select v-model="loginForm.role">
+                                <el-option value="0" label="用户" />
+                                <el-option value="1" label="管理员" />
+                            </el-select>
+                        </el-form-item>
+
                         <el-form-item prop="username">
                             <el-input v-model="loginForm.username" maxlength="25" type="text" placeholder="用户名">
                                 <template #prefix>
@@ -188,13 +195,6 @@ const register = () => {
                                     </el-icon>
                                 </template>
                             </el-input>
-                        </el-form-item>
-
-                        <el-form-item prop="role" style="width: 220px">
-                            <el-select v-model="loginForm.role">
-                                <el-option value="0" label="用户" />
-                                <el-option value="1" label="管理员" />
-                            </el-select>
                         </el-form-item>
                     </el-form>
                     <div style="margin-top: 20px">
