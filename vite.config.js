@@ -29,5 +29,14 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    proxy:{
+      'api':{
+        target:'http://47.121.187.213:8080',
+        changeOrigin:true,
+        rewrite:(path)=>path.replace(/^\/api/,'')
+      }
+    }
   }
 })

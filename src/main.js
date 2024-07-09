@@ -10,13 +10,17 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css'
+import {createPersistedState} from 'pinia-persistedstate-plugin'
 
 //createApp(App).mount('#app')
 
-axios.defaults.baseURL = "http://47.121.187.213:8080"
+// axios.defaults.baseURL = "http://47.121.187.213:8080"
+
 
 const app = createApp(App)
-
+const pinia = createPinia();
+const persist = createPersistedState()
+pinia.use(persist)
 app.use(createPinia())
 app.use(router)
 app.use(ElementPlus)
