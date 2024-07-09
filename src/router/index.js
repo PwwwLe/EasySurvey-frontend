@@ -61,6 +61,36 @@ const router = createRouter({
                     component: () => import('@/views/settings/changeBasicInfo.vue')
                 },
             ]
+        },
+        {
+            path: '/admin',
+            name: 'admin',
+            redirect: '/admin/adminQueastionnaire',
+            component: () => import('@/views/admin/index.vue'),
+            meta: {
+                // 页面标题title
+                title: '问卷易管理平台'
+            },
+            children: [
+                {
+                    path: 'adminQueastionnaire',
+                    name: 'adminQueastionnaire',
+                    meta: {
+                        // 页面标题title
+                        title: '问卷管理-问卷易'
+                    },
+                    component: () => import('@/views/admin/adminQueastionnaire.vue')
+                },
+                {
+                    path: 'adminUser',
+                    name: 'adminUser',
+                    meta: {
+                        // 页面标题title
+                        title: '企业管理-问卷易'
+                    },
+                    component: () => import('@/views/admin/adminUser.vue'),
+                }
+            ]
         }
     ]
 })
