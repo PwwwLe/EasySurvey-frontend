@@ -27,7 +27,7 @@ const loading = ref(true)
         <el-container>
             <el-aside width="230px" class="sidebar">
                 <el-menu style="height: 100%" router :default-active="$route.path">
-                    <el-menu-item index="/admin/adminQueastionnaire">
+                    <el-menu-item index="/admin/adminQuestionnaire">
                         <template #title>
                             <el-icon>
                                 <Memo />
@@ -61,8 +61,8 @@ const loading = ref(true)
 
 <style lang="less" scoped>
 .main-container {
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
 }
 
 .main-container-header {

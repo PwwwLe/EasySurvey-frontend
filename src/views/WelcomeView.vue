@@ -27,10 +27,10 @@ const loginRule = {
 
 const loginFormRef = ref()
 
-function userLogin () {
+function userLogin() {
   loginFormRef.value.validate((isValid) => {
     if (isValid) {
-      login(loginForm.username, loginForm.password, loginForm.role, () => { router.push('/index') })
+      login(loginForm.username, loginForm.password, loginForm.role, () => { router.push('/user') })
     }
   });
   //直接跳到主页，调试用
@@ -116,8 +116,7 @@ const register = () => {
 
 <template>
   <div class="page-center">
-    <div class="container"
-         :class="{ active: isActive }">
+    <div class="container" :class="{ active: isActive }">
       <div class="form-container sign-up">
         <form>
           <h1 style="margin-bottom: 20px;">创建用户账号</h1>
@@ -127,14 +126,9 @@ const register = () => {
                     <input type="password" placeholder="Password">
                     <button @click.prevent="signUp">注册</button> -->
 
-          <el-form :model="registerForm"
-                   :rules="registerRule"
-                   ref="registerFormRef">
+          <el-form :model="registerForm" :rules="registerRule" ref="registerFormRef">
             <el-form-item prop="username">
-              <el-input v-model="registerForm.username"
-                        maxlength="10"
-                        type="text"
-                        placeholder="用户名">
+              <el-input v-model="registerForm.username" maxlength="10" type="text" placeholder="用户名">
                 <template #prefix>
                   <el-icon>
                     <User />
@@ -144,10 +138,7 @@ const register = () => {
             </el-form-item>
 
             <el-form-item prop="password">
-              <el-input v-model="registerForm.password"
-                        maxlength="20"
-                        type="password"
-                        placeholder="密码">
+              <el-input v-model="registerForm.password" maxlength="20" type="password" placeholder="密码">
                 <template #prefix>
                   <el-icon>
                     <Lock />
@@ -157,10 +148,7 @@ const register = () => {
             </el-form-item>
 
             <el-form-item prop="password_repeat">
-              <el-input v-model="registerForm.password_repeat"
-                        maxlength="20"
-                        type="password"
-                        placeholder="确认密码">
+              <el-input v-model="registerForm.password_repeat" maxlength="20" type="password" placeholder="确认密码">
                 <template #prefix>
                   <el-icon>
                     <Lock />
@@ -170,10 +158,7 @@ const register = () => {
             </el-form-item>
           </el-form>
           <div style="margin-top: 20px;">
-            <el-button @click="register"
-                       style="width: 270px"
-                       type="warning"
-                       plain>注册</el-button>
+            <el-button @click="register" style="width: 270px" type="warning" plain>注册</el-button>
           </div>
         </form>
       </div>
@@ -183,24 +168,16 @@ const register = () => {
           <span style="margin-bottom: 20px;">使用你的用户名和密码</span>
           <!-- <input type="text" placeholder="Username">
                     <input type="password" placeholder="Password"> -->
-          <el-form :model="loginForm"
-                   :rules="loginRule"
-                   ref="loginFormRef">
-            <el-form-item prop="role"
-                          style="width: 220px">
+          <el-form :model="loginForm" :rules="loginRule" ref="loginFormRef">
+            <el-form-item prop="role" style="width: 220px">
               <el-select v-model="loginForm.role">
-                <el-option value="0"
-                           label="用户" />
-                <el-option value="1"
-                           label="管理员" />
+                <el-option value="0" label="用户" />
+                <el-option value="1" label="管理员" />
               </el-select>
             </el-form-item>
 
             <el-form-item prop="username">
-              <el-input v-model="loginForm.username"
-                        maxlength="25"
-                        type="text"
-                        placeholder="用户名">
+              <el-input v-model="loginForm.username" maxlength="25" type="text" placeholder="用户名">
                 <template #prefix>
                   <el-icon>
                     <User />
@@ -210,10 +187,7 @@ const register = () => {
             </el-form-item>
 
             <el-form-item prop="password">
-              <el-input v-model="loginForm.password"
-                        type="password"
-                        maxlength="20"
-                        placeholder="密码">
+              <el-input v-model="loginForm.password" type="password" maxlength="20" placeholder="密码">
                 <template #prefix>
                   <el-icon>
                     <Lock />
@@ -223,31 +197,23 @@ const register = () => {
             </el-form-item>
           </el-form>
           <div style="margin-top: 20px">
-            <el-button @click="userLogin"
-                       style="width: 270px"
-                       type="success"
-                       plain>立即登录</el-button>
+            <el-button @click="userLogin" style="width: 270px" type="success" plain>立即登录</el-button>
           </div>
           <!-- <a href="#">忘记密码?</a>
                     <button @click.prevent="signIn">登录</button> -->
         </form>
       </div>
       <div class="toggle-container">
-        <div class="toggle"
-             :class="{ active: isActive }">
+        <div class="toggle" :class="{ active: isActive }">
           <div class="toggle-panel toggle-left">
             <h1>欢迎回来！</h1>
             <p>登录以使用网站所有功能</p>
-            <button class="hidden"
-                    id="login"
-                    @click="switchToLogin">登录</button>
+            <button class="hidden" id="login" @click="switchToLogin">登录</button>
           </div>
           <div class="toggle-panel toggle-right">
             <h1>你好!</h1>
             <p>注册账号以使用网站所有功能</p>
-            <button class="hidden"
-                    id="register"
-                    @click="switchToRegister">注册</button>
+            <button class="hidden" id="register" @click="switchToRegister">注册</button>
           </div>
         </div>
       </div>
@@ -255,7 +221,7 @@ const register = () => {
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap");
 
 * {
@@ -386,6 +352,7 @@ body {
 }
 
 @keyframes move {
+
   0%,
   49.99% {
     opacity: 0;

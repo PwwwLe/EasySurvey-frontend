@@ -15,9 +15,9 @@ const router = createRouter({
             }
         },
         {
-            path: '/index',
-            name: 'index',
-            //redirect: '/index/questionnaire-filling',
+            path: '/user',
+            name: 'user',
+            redirect: '/user/unfilledQuestionnaire',
             component: () => import('@/views/IndexView.vue'),
             meta: {
                 // 页面标题title
@@ -65,7 +65,7 @@ const router = createRouter({
         {
             path: '/admin',
             name: 'admin',
-            redirect: '/admin/adminQueastionnaire',
+            redirect: '/admin/adminQuestionnaire',
             component: () => import('@/views/admin/index.vue'),
             meta: {
                 // 页面标题title
@@ -73,13 +73,13 @@ const router = createRouter({
             },
             children: [
                 {
-                    path: 'adminQueastionnaire',
-                    name: 'adminQueastionnaire',
+                    path: 'adminQuestionnaire',
+                    name: 'adminQuestionnaire',
                     meta: {
                         // 页面标题title
                         title: '问卷管理-问卷易'
                     },
-                    component: () => import('@/views/admin/adminQueastionnaire.vue')
+                    component: () => import('@/views/admin/adminQuestionnaire.vue')
                 },
                 {
                     path: 'adminUser',
@@ -91,6 +91,11 @@ const router = createRouter({
                     component: () => import('@/views/admin/adminUser.vue'),
                 }
             ]
+        },
+        {
+            path:"/reateQuestionnaire",
+            name: "createQuestionnaire",
+            component: () => import('@/views/admin/createQuestionnaire.vue')
         }
     ]
 })
