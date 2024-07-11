@@ -31,11 +31,11 @@ export default defineConfig({
     }
   },
   server: {
-    proxy:{
-      'api':{
-        target:'http://47.121.187.213:8080',
-        changeOrigin:true,
-        rewrite:(path)=>path.replace(/^\/api/,'')
+    proxy: {
+      '/api': {
+        target: 'http://47.121.187.213:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   }

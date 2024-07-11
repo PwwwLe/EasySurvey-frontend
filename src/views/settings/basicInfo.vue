@@ -1,48 +1,44 @@
 <script setup>
-
-import { computed, reactive, ref } from "vue";
-import { ChatDotSquare, Lock, Message, User } from "@element-plus/icons-vue";
-import { login, get, post, Register } from "@/net";
-import { ElMessage } from "element-plus";
+import { reactive } from "vue";
+import { get } from "@/net";
 import router from "@/router";
-import { ElAvatar, ElCard, ElRow, ElCol } from 'element-plus';
+import { ElAvatar, ElCard, ElRow, ElCol, ElTag } from 'element-plus';
 
-//基本个人信息
-
+// 基本个人信息
 const user = reactive({
     avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
     name: '张三',
-    email: 'zhangsan@example.com',
+    email: '未编写',
     company: '未编写',
     president: '未编写',
-    industry: '未编写',
+    industry: [],
     businessScope: '未编写'
 });
 
+// 方法：将 industry 数组转换为行业名称数组，最多取前5个
+function getIndustryNames(industryArray) {
+    if (!Array.isArray(industryArray) || industryArray.length === 0) {
+        return []; // 如果 industryArray 不是数组或为空，返回空数组
+    }
+    return industryArray.slice(0, 5).map(item => item.name || '未知行业');
+}
 
-// const basicInfoForm = reactive({
-//     username: '',
-//     password: '',
-//     role: '0',
-// })
-
-// const basicInfoRule = {
-//     username: [
-//         { required: true, message: '请输入用户名' }
-//     ],
-//     password: [
-//         { required: true, message: '请输入密码' }
-//     ],
-//     role: [
-//         { required: true, message: '请输入role' }
-//     ]
-// }
-
-// const basicInfoFormRef = ref()
-
+// 获取用户基本信息
+get('/api/user/userInfo', data => {
+    user.avatar = data.user.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
+    user.name = data.user.name || '未编写';
+    user.president = data.user.president || '未编写';
+    user.email = data.user.email || '未编写';
+    user.businessScope = data.user.businessScope || '未编写';
+    user.industry = getIndustryNames(data.industry); // 处理 industry 字段
+});
 
 function getBasicInfo() {
-    get("/user/userInfo", () => { router.push('/index') })
+    get("/api/user/userInfo", () => { });
+}
+
+function ToChangeBasicInfo() {
+    router.push('/user/changeBasicInfo')
 }
 
 </script>
@@ -51,19 +47,14 @@ function getBasicInfo() {
     basicInfo
     <button type="text" @click="getBasicInfo">拉取用户基本信息</button>
 
-
     <el-card class="user-info-card">
         <div class="avatar-container">
             <el-avatar :src="user.avatar" size="large"></el-avatar>
         </div>
         <div class="user-info-container">
             <el-row class="user-info-row">
-                <el-col :span="8">姓名:</el-col>
-                <el-col :span="16">{{ user.name }}</el-col>
-            </el-row>
-            <el-row class="user-info-row">
                 <el-col :span="8">企业名:</el-col>
-                <el-col :span="16">{{ user.company }}</el-col>
+                <el-col :span="16">{{ user.name }}</el-col>
             </el-row>
             <el-row class="user-info-row">
                 <el-col :span="8">代表人:</el-col>
@@ -71,7 +62,9 @@ function getBasicInfo() {
             </el-row>
             <el-row class="user-info-row">
                 <el-col :span="8">所属行业:</el-col>
-                <el-col :span="16">{{ user.industry }}</el-col>
+                <el-col :span="16">
+                    <el-tag v-for="(industry, index) in user.industry" :key="index" type="info">{{ industry }}</el-tag>
+                </el-col>
             </el-row>
             <el-row class="user-info-row">
                 <el-col :span="8">公司邮箱:</el-col>
@@ -83,7 +76,7 @@ function getBasicInfo() {
             </el-row>
             <el-row class="user-info-row">
                 <el-col :span="24" style="text-align: center;">
-                    <el-button type="primary" @click="() => router.push('/index/changeBasicInfo')">修改信息</el-button>
+                    <el-button type="primary" @click="ToChangeBasicInfo">修改信息</el-button>
                 </el-col>
             </el-row>
         </div>
@@ -108,6 +101,11 @@ function getBasicInfo() {
 }
 
 .user-info-row {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
+}
+
+.el-tag {
+    margin-right: 10px;
+    margin-bottom: 10px;
 }
 </style>

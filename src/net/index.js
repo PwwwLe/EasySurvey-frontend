@@ -14,12 +14,20 @@ const defaultError = (err) => {
 }
 
 
-function internalPost(url, data, header, success, failure, error = defaultError) {
+function internalPost(url, queryParams, data, header, success, failure, error = defaultError) {
     console.log(url)
     console.log(data)
     console.log(header)
+    console.log(queryParams)
 
-    axios.post(url, data, { headers: header }).then(({ data }) => {
+    // 手动拼接查询字符串
+    const queryString = Object.keys(queryParams)
+        .map(key => `${key}=${queryParams[key].join(',')}`)
+        .join('&');
+    const fullUrl = `${url}?${queryString}`;
+
+    console.log(fullUrl)
+    axios.post(fullUrl, data, { headers: header }).then(({ data }) => {
         console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -57,12 +65,38 @@ function internalPut(url, data, header, success, failure, error = defaultError) 
     }).catch(err => error(err))
 }
 
-function internalPatch(url, data, header, success, failure, error = defaultError) {
+// function internalPatch(url, queryParams, data, header, success, failure, error = defaultError) {
+//     console.log(url)
+//     console.log(data)
+//     console.log(header)
+//     console.log(queryParams)
+//     const fullUrl = `${url}?${new URLSearchParams(queryParams).toString()}`;
+//     console.log(fullUrl)
+
+//     axios.patch(fullUrl, data, { headers: header }).then(({ data }) => {
+//         console.log(data)
+//         if (data.code === 1) {
+//             success(data.data)
+//         } else {
+//             defaultFailure(data.message, data.code, url, data)
+//         }
+//     }).catch(err => error(err))
+// }
+function internalPatch(url, queryParams, data, header, success, failure, error = defaultError) {
     console.log(url)
     console.log(data)
     console.log(header)
+    console.log(queryParams)
 
-    axios.patch(url, data, { headers: header }).then(({ data }) => {
+    // 手动拼接查询字符串
+    const queryString = Object.keys(queryParams)
+        .map(key => `${key}=${queryParams[key].join(',')}`)
+        .join('&');
+    const fullUrl = `${url}?${queryString}`;
+
+    console.log(fullUrl)
+
+    axios.patch(fullUrl, data, { headers: header }).then(({ data }) => {
         console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -71,6 +105,7 @@ function internalPatch(url, data, header, success, failure, error = defaultError
         }
     }).catch(err => error(err))
 }
+
 
 function internalDelete(url, header, success, failure, error = defaultError) {
     console.log(url)
@@ -113,7 +148,7 @@ function deleteAccessToken() {
 }
 
 function login(username, password, role, success, failure = defaultFailure) {
-    axios.post('/login', {
+    axios.post('/api/login', {
         name: username,
         password: password,
     }, {
@@ -132,7 +167,7 @@ function login(username, password, role, success, failure = defaultFailure) {
             ElMessage.success(`登陆成功,欢迎 ${data.data.name} 进入!`)
             success(data.data)
         } else {
-            defaultFailure(data.msg, data.code, '/login')
+            defaultFailure(data.msg, data.code, '/api/login')
         }
     }).catch(err => error(err))
 }
@@ -140,7 +175,7 @@ function login(username, password, role, success, failure = defaultFailure) {
 function Register(username, password, success, failure = defaultFailure) {
     console.log(username)
     console.log(password)
-    axios.post('/register', {
+    axios.post('api/register', {
         name: username,
         password: password,
     }, {
@@ -155,7 +190,7 @@ function Register(username, password, success, failure = defaultFailure) {
             success(data.data)
         }
         else {
-            defaultFailure(data.msg, data.code, '/register')
+            defaultFailure(data.msg, data.code, 'api/register')
             //console.warn(`请求地址: /register, 状态码: ${data.code}, 错误消息: ${data.msg}`)
         }
     }).catch(err => error(err))
@@ -167,25 +202,27 @@ function Register(username, password, success, failure = defaultFailure) {
 function accessHeader() {
     if (takeAccessToken())
         return {
-            'Authorization': `Bearer ${takeAccessToken()}`
+            //'Authorization': `Bearer ${takeAccessToken()}`
+            'Authorization': `${takeAccessToken()}`
         }
     else return {};
 }
 
 function get(url, success, failure = defaultFailure) {
+    console.log(url)
     internalGet(url, accessHeader(), success, failure)
 }
 
-function post(url, data, success, failure = defaultFailure) {
-    internalPost(url, data, accessHeader(), success, failure)
+function post(url, queryParams, data, success, failure = defaultFailure) {
+    internalPost(url, queryParams, data, accessHeader(), success, failure)
 }
 
 function put(url, data, success, failure = defaultFailure) {
     internalPut(url, data, accessHeader(), success, failure);
 }
 
-function patch(url, data, success, failure = defaultFailure) {
-    internalPatch(url, data, accessHeader(), success, failure);
+function patch(url, queryParams, data, success, failure = defaultFailure) {
+    internalPatch(url, queryParams, data, accessHeader(), success, failure);
 }
 
 function del(url, success, failure = defaultFailure) { // delete is a reserved word, so use del instead

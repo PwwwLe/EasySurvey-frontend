@@ -37,7 +37,7 @@ const loading = ref(true)
         <el-container>
             <el-aside width="230px" class="sidebar">
                 <el-menu style="height: 100%" router :default-active="$route.path">
-                    <el-menu-item index="/index/unfilledQuestionnaire">
+                    <el-menu-item index="/user/unfilledQuestionnaire">
                         <template #title>
                             <el-icon>
                                 <Memo />
@@ -45,7 +45,7 @@ const loading = ref(true)
                             未填写的问卷
                         </template>
                     </el-menu-item>
-                    <el-menu-item index="/index/completedQuestionnaire">
+                    <el-menu-item index="/user/completedQuestionnaire">
                         <template #title>
                             <el-icon>
                                 <Memo />
@@ -60,12 +60,12 @@ const loading = ref(true)
                             </el-icon>
                             <span><b>设置</b></span>
                         </template>
-                        <el-menu-item index="/index/basicInfo">
+                        <el-menu-item index="/user/basicInfo">
                             <template #title>
                                 基本资料
                             </template>
                         </el-menu-item>
-                        <!-- <el-menu-item index="/index/user-setting">
+                        <!-- <el-menu-item index="/user/user-setting">
                             <template #title>
                                 <el-button type="text" @click="userLogout">退出登录</el-button>
                             </template>

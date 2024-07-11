@@ -15,9 +15,9 @@ const router = createRouter({
             }
         },
         {
-            path: '/index',
-            name: 'index',
-            //redirect: '/index/questionnaire-filling',
+            path: '/user',
+            name: 'user',
+            redirect: '/user/unfilledQuestionnaire',
             component: () => import('@/views/IndexView.vue'),
             meta: {
                 // 页面标题title
