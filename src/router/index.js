@@ -91,7 +91,7 @@ const router = createRouter({
             ]
         },
         {
-            path: "/createQuestionnaire",
+            path:"/createQuestionnaire",
             name: "createQuestionnaire",
             component: () => import('@/views/admin/createQuestionnaire.vue')
         }
