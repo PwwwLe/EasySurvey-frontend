@@ -1,7 +1,7 @@
 <script setup>
 
-import { get } from "@/net";
-import { ref } from "vue";
+import { get, getImage } from "@/net";
+import { ref, reactive } from "vue";
 import router from "@/router";
 import { useStore } from "@/store";
 import { Location, Memo, Setting } from "@element-plus/icons-vue";
@@ -9,6 +9,9 @@ import { Location, Memo, Setting } from "@element-plus/icons-vue";
 const store = useStore()
 const loading = ref(true)
 
+const user = reactive({
+    avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+});
 // get('/api/account/info', (data) => {
 //     //这里使用pinia持久化数据
 //     store.user = data
@@ -19,6 +22,15 @@ const loading = ref(true)
 //     logout(() => router.push('/'))
 // }
 
+get("/api/user/userInfo", (data) => {
+    console.log(data)
+    getImage(data.user.avatar, (data) => {
+        console.log(data)
+        user.avatar = 'data:image/png;base64,' + data.data.data
+        console.log(user.avatar)
+    })
+});
+
 </script>
 
 <template>
@@ -26,11 +38,7 @@ const loading = ref(true)
         <el-header class="main-container-header">
             <el-text tag="b" style="margin-left: 15px; font-size: x-large">问卷调查系统</el-text>
             <div style="flex: 1" class="user-info">
-                <div class="profile">
-                    <div>{{ store.user.name }}<el-tag>{{ store.user.role }}</el-tag></div>
-                    <div>{{ store.user.email }}</div>
-                </div>
-                <el-avatar :src="store.avatarUrl"></el-avatar>
+                <el-avatar :src="user.avatar"></el-avatar>
             </div>
         </el-header>
 

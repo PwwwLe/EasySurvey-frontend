@@ -1,6 +1,6 @@
 <script setup>
 import { reactive } from "vue";
-import { get } from "@/net";
+import { get, getImage } from "@/net";
 import router from "@/router";
 import { ElAvatar, ElCard, ElRow, ElCol, ElTag } from 'element-plus';
 
@@ -25,16 +25,27 @@ function getIndustryNames(industryArray) {
 
 // 获取用户基本信息
 get('/api/user/userInfo', data => {
-    user.avatar = data.user.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
+    user.avatar = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
     user.name = data.user.name || '未编写';
     user.president = data.user.president || '未编写';
     user.email = data.user.email || '未编写';
     user.businessScope = data.user.businessScope || '未编写';
     user.industry = getIndustryNames(data.industry); // 处理 industry 字段
+    getImage(data.user.avatar, (data) => {
+        //console.log(data)
+        if (data.data.data != null)
+            user.avatar = 'data:image/png;base64,' + data.data.data
+    })
 });
 
 function getBasicInfo() {
-    get("/api/user/userInfo", () => { });
+    get("/api/user/userInfo", (data) => {
+        getImage(data.user.avatar, (data) => {
+            console.log(data)
+            user.avatar = 'data:image/png;base64,' + data.data.data
+            console.log(user.avatar)
+        })
+    });
 }
 
 function ToChangeBasicInfo() {

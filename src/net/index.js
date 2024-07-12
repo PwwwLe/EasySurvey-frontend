@@ -38,10 +38,10 @@ function internalPost(url, queryParams, data, header, success, failure, error = 
 }
 
 function internalGet(url, header, success, failure, error = defaultError) {
-    console.log(url)
-    console.log(header)
+    //console.log(url)
+    //console.log(header)
     axios.get(url, { headers: header }).then(({ data }) => {
-        console.log(data)
+        //console.log(data)
         if (data.code === 1) {
             success(data.data)
         } else {
@@ -131,7 +131,7 @@ function storeAccessToken(token, expire) {
 
 function takeAccessToken() {
     const str = localStorage.getItem(authItemName) || sessionStorage.getItem(authItemName)
-    console.log("Token：" + str);
+    //console.log("Token：" + str);
     if (!str) return null;
     const authObj = JSON.parse(str)
     if (new Date(authObj.expire) <= new Date()) {
@@ -196,6 +196,99 @@ function Register(username, password, success, failure = defaultFailure) {
     }).catch(err => error(err))
 }
 
+function UploadImage(url, queryParams, data, success, failure = defaultFailure) {
+    console.log(url);
+    console.log(data);
+    console.log(queryParams);
+
+    // 将 Base64 字符串转换为 Blob
+    const base64Data = queryParams.file.split(',')[1]; // 去除 data:image/jpeg;base64,
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'image/png' }); // 假设 PNG 图片
+
+    const formData = new FormData();
+    formData.append('file', blob, 'image.png'); // 附加上述 Blob，使用一个文件名
+
+    // 定义 Axios 配置
+    const config = {
+        headers: {
+            'Authorization': `${takeAccessToken()}`,
+            'Content-Type': 'multipart/form-data'
+        }
+    };
+
+    // 发送请求
+    axios.post(url, formData, config)
+        .then(({ data }) => {
+            console.log(data);
+            if (data.code === 1) {
+                ElMessage.success('上传成功');
+                updateAvatar(data.data)
+            } else {
+                failure(data.msg, data.code, url);
+            }
+        })
+        .catch(err => error(err));
+}
+
+function updateAvatar(avatarUrl, failure = defaultFailure) {
+    console.log(avatarUrl)
+    const queryParams = {
+        url: avatarUrl
+    }
+    const url = '/api/user/updateAvator'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `${takeAccessToken()}`
+        }
+    };
+
+    axios.patch(fullUrl, null, config)
+        .then(({ data }) => {
+            console.log(data);
+            if (data.code === 1) {
+
+            } else {
+                failure(data.msg, data.code, fullUrl);
+            }
+        })
+        .catch(err => error(err));
+}
+
+function getImage(avatarUrl, success, failure = defaultError) {
+    //console.log(avatarUrl)
+    const queryParams = {
+        id: avatarUrl
+    }
+    const url = '/api/image/getImage'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    //console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `${takeAccessToken()}`
+        }
+    };
+
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            //console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl);
+            }
+        })
+        .catch(err => error(err));
+}
 /**
  * 获取请求头
  */
@@ -209,7 +302,7 @@ function accessHeader() {
 }
 
 function get(url, success, failure = defaultFailure) {
-    console.log(url)
+    //console.log(url)
     internalGet(url, accessHeader(), success, failure)
 }
 
@@ -243,4 +336,4 @@ function del(url, success, failure = defaultFailure) { // delete is a reserved w
 function unauthorized() {
     return !takeAccessToken();
 }
-export { login, get, post, put, patch, del, unauthorized, accessHeader, Register }
+export { login, get, post, put, patch, del, unauthorized, accessHeader, Register, UploadImage, getImage }
