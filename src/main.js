@@ -11,6 +11,7 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css'
 import { createPersistedState } from 'pinia-persistedstate-plugin'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
 //createApp(App).mount('#app')
 
@@ -23,7 +24,9 @@ const persist = createPersistedState()
 pinia.use(persist)
 app.use(createPinia())
 app.use(router)
-app.use(ElementPlus)
+app.use(ElementPlus, {
+  locale: zhCn,
+})
 
 router.beforeEach((to, from, next) => {
     /* 路由发生变化修改页面title */
@@ -34,5 +37,4 @@ router.beforeEach((to, from, next) => {
 })
 
 app.component('v-chart', ECharts)
-
 app.mount('#app')
