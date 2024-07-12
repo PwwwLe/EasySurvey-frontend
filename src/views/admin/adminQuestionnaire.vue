@@ -7,7 +7,38 @@ import axios from 'axios'
 
 const router = useRouter()
 const searchContent = ref('')
-const questionnaires = reactive([])
+const questionnaires = reactive([
+{
+    id: 1,
+    title: 'Customer Satisfaction Survey',
+    description: 'A survey to measure customer satisfaction with our services.',
+    create_time: '2024-07-12T10:00:00Z',
+    update_time: '2024-07-12T10:00:00Z',
+    start_time: '2024-07-15T08:00:00Z',
+    end_time: '2024-08-15T17:00:00Z',
+    status: 1
+  },
+  {
+    id: 2,
+    title: 'Employee Feedback Form',
+    description: 'A form for collecting feedback from employees about workplace conditions.',
+    create_time: '2024-07-10T09:30:00Z',
+    update_time: '2024-07-11T09:30:00Z',
+    start_time: '2024-07-11T08:00:00Z',
+    end_time: '2024-07-31T17:00:00Z',
+    status: 0
+  },
+  {
+    id: 3,
+    title: 'Product Evaluation Survey',
+    description: 'A survey to evaluate the new product launched last month.',
+    create_time: '2024-07-05T15:00:00Z',
+    update_time: '2024-07-10T12:00:00Z',
+    start_time: '2024-07-07T08:00:00Z',
+    end_time: '2024-07-25T17:00:00Z',
+    status: 1
+  }
+])
 
 const fetchQuestionnaires = async () => {
   try {
@@ -23,7 +54,7 @@ onMounted(() => {
 })
 
 const navigateToCreateQuestionnaire = () => {
-  router.push('/createquestionnaire')
+  router.push('/createQuestionnaire')
 }
 
 const handleEdit = (questionnaire) => {
@@ -60,6 +91,7 @@ const handleRemind = (questionnaire) => {
           type="primary"
           :icon="Plus"
           @click="navigateToCreateQuestionnaire"
+          style="margin-left: 15px;"
         >
           创建问卷
         </el-button>
@@ -68,7 +100,7 @@ const handleRemind = (questionnaire) => {
         <el-input
           v-model="searchContent"
           style="max-width: 600px"
-          placeholder="Please input"
+          placeholder="请输入问卷标题进行搜索..."
           class="input-with-select"
         >
           <template #append>

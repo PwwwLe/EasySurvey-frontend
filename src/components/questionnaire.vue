@@ -34,34 +34,41 @@ const handleRemind = () => {
 </script>
 
 <template>
-  <el-card style="width: 100%;margin-top: 20px;padding: 5px 10px 10px 10px;">
+  <el-card style="width: 100%; margin-top: 20px; padding: 5px 10px 10px 10px;">
     <template #header>
       <div class="card-header">
         <div class="head-left"><span>{{ questionnaire.title }}</span></div>
         <div class="head-right">
-          <span>答卷:{{ questionnaire.responses }} &ensp;&ensp;&ensp;</span>
-          <span>{{ questionnaire.date }}</span>
+          <div class="ans-pro">
+            <span>答卷:{{ questionnaire.responses }} &ensp;&ensp;&ensp;</span>
+            <span>进度:{{ questionnaire.responses }} &ensp;&ensp;&ensp;</span>
+          </div>
+          
+          <div class="time">
+            <span>创建时间:{{ questionnaire.start_time }}</span>
+            <span>截止时间:{{ questionnaire.end_time }}</span>
+          </div>
         </div>
       </div>
     </template>
     <div class="card-main">
       <div class="main-left">
         <div style="margin-right: 5px">
-          <el-button key="编辑" type="plain" text @click="handleEdit">
+          <el-button class="custom-button" key="编辑" type="plain" text @click="handleEdit">
             <el-icon>
               <Edit />
             </el-icon> 编辑问卷
           </el-button>
         </div>
         <div style="margin-right: 5px">
-          <el-button key="转发" type="plain" text @click="handleShare">
+          <el-button class="custom-button" key="转发" type="plain" text @click="handleShare">
             <el-icon>
               <Share />
             </el-icon> 转发问卷
           </el-button>
         </div>
         <div style="margin-right: 5px">
-          <el-button key="分析" type="plain" text @click="handleDownload">
+          <el-button class="custom-button" key="分析" type="plain" text @click="handleDownload">
             <el-icon>
               <Download />
             </el-icon> 分析&下载
@@ -70,14 +77,14 @@ const handleRemind = () => {
       </div>
       <div class="main-right">
         <div style="margin-right: 5px">
-          <el-button key="删除" type="plain" text @click="handleDelete">
+          <el-button class="custom-button" key="删除" type="plain" text @click="handleDelete">
             <el-icon>
               <Delete />
             </el-icon> 删除
           </el-button>
         </div>
         <div style="margin-right: 5px">
-          <el-button key="提醒" type="plain" text @click="handleRemind">
+          <el-button class="custom-button" key="提醒" type="plain" text @click="handleRemind">
             <el-icon>
               <Bell />
             </el-icon> 提醒
@@ -88,12 +95,43 @@ const handleRemind = () => {
   </el-card>
 </template>
 
-<style scoped>
+<style lang="less" scoped>
+.custom-button {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: #606266;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.custom-button:hover {
+  color: #409eff;
+  background-color: transparent; /* 防止默认的背景变化 */
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  .head-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .ans-pro{
+      display: flex;
+      flex-direction: column;
+      font-size: smaller;
+    }
+    .time {
+      display: flex;
+      flex-direction: column;
+      font-size: smaller;
+    }
+  }
 }
+
 .card-main {
   display: flex;
   justify-content: space-between;
