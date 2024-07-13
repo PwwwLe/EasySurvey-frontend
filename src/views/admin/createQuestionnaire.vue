@@ -1,60 +1,11 @@
-<script setup>
-import { ref } from 'vue';
-import { ElButton, ElInput, ElDatePicker, ElMessage, ElScrollbar } from 'element-plus';
-import question from '@/components/question.vue';
-
-const title = ref('');
-const description = ref('');
-const questions = ref([]);
-const deadline = ref(null);
-
-const addQuestion = (type) => {
-  const newQuestion = {
-    type,
-    title: '',
-    options: [],
-    required: false,
-    isEditing: false,
-  };
-
-  if (type === 'multiple-choice' || type === 'dropdown' || type === 'single-choice') {
-    newQuestion.options.push("");
-    newQuestion.options.push("");
-  }
-
-  questions.value.push(newQuestion);
-};
-
-const updateQuestion = (index, updatedQuestion) => {
-  questions.value[index] = updatedQuestion;
-};
-
-const deleteQuestion = (index) => {
-  questions.value.splice(index, 1);
-};
-
-const toggleEditing = (index) => {
-  questions.value.forEach((q, i) => {
-    q.isEditing = index === i;
-  });
-};
-
-const completeEditing = () => {
-  ElMessage({
-    message: '问卷编辑完成！',
-    type: 'success',
-  });
-  // 在这里可以执行其他完成问卷编辑的逻辑
-};
-</script>
-
 <template>
   <el-container style="height: 100vh;">
     <el-aside width="20%">
       <div class="left-panel">
         <el-button @click="addQuestion('single-choice')">单选</el-button>
         <el-button @click="addQuestion('multiple-choice')">多选</el-button>
-        <el-button @click="addQuestion('dropdown')">下拉选择</el-button>
+        <el-button @click="addQuestion('dropdown-single')">下拉单选</el-button>
+        <el-button @click="addQuestion('dropdown-multiple')">下拉多选</el-button>
         <el-button @click="addQuestion('short-answer')">简答</el-button>
         <el-button @click="addQuestion('document')">文件上传</el-button>
       </div>
@@ -63,12 +14,12 @@ const completeEditing = () => {
       <el-scrollbar>
         <div class="right-panel">
           <div class="questionnaire-header">
-            <el-input v-model="title" placeholder="点击修改问卷标题" class="title-input" />
-            <el-input type="textarea" v-model="description" placeholder="添加问卷描述" />
+            <el-input v-model="surveyData.title" placeholder="点击修改问卷标题" class="title-input" />
+            <el-input type="textarea" v-model="surveyData.description" placeholder="添加问卷描述" />
           </div>
           <div class="questionnaire-body">
             <question
-              v-for="(question, index) in questions"
+              v-for="(question, index) in surveyData.questions"
               :key="index"
               :question="question"
               :isEditing="question.isEditing"
@@ -80,9 +31,9 @@ const completeEditing = () => {
           <div class="questionnaire-footer">
             <div>
                 <span>截止时间：</span>
-                <el-date-picker v-model="deadline" type="datetime" placeholder="选择问卷截止时间" />
+                <el-date-picker v-model="surveyData.end_time" type="datetime" placeholder="选择问卷截止时间" />
             </div>
-            <el-button type="primary" @click="completeEditing">完成问卷编辑</el-button>
+            <el-button :icon="Select" type="primary" @click="submitSurvey">发布问卷</el-button>
           </div>
         </div>
       </el-scrollbar>
@@ -90,18 +41,134 @@ const completeEditing = () => {
   </el-container>
 </template>
 
-<style lang="less" scoped>
+<script setup>
+import { ref } from 'vue';
+import { ElButton, ElInput, ElDatePicker, ElMessage, ElScrollbar } from 'element-plus';
+import {Select} from '@element-plus/icons-vue'
+import axios from 'axios';
+import question from '@/components/question.vue';
+import { useRouter } from 'vue-router'
+
+const router = useRouter();
+const surveyData = ref({
+  title: '',
+  description: '',
+  start_time: null,
+  end_time: null,
+  status: 0,
+  owner_id: null,
+  modified: false,
+  questions: [],
+});
+
+const addQuestion = (type) => {
+  const newQuestion = {
+    type,
+    title: '',
+    line_num: surveyData.value.questions.length + 1,
+    required: false,
+    options: [],
+    isEditing: false,
+  };
+
+  if (type === 'multiple-choice' || type === 'dropdown-single' || type === 'dropdown-multiple' || type === 'single-choice' || type === 'single-choice') {
+    newQuestion.options.push({ text: '', line_num: 1 });
+    newQuestion.options.push({ text: '', line_num: 2 });
+  }
+
+  surveyData.value.questions.push(newQuestion);
+};
+
+const updateQuestion = (index, updatedQuestion) => {
+  // console.log(updatedQuestion);
+  surveyData.value.questions[index] = updatedQuestion;
+  console.log(surveyData.value);
+};
+
+const deleteQuestion = (index) => {
+  surveyData.value.questions.splice(index, 1);
+  // Reorder line_num for remaining questions
+  surveyData.value.questions.forEach((question, i) => {
+    question.line_num = i + 1;
+  });
+};
+
+const toggleEditing = (index) => {
+  console.log("你好")
+  surveyData.value.questions.forEach((q, i) => {
+    q.isEditing = index === i;
+  }); 
+};
+
+const submitSurvey = async () => {
+  if (surveyData.title) {
+    ElMessage({
+      message: '请填写问卷标题',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  else {
+    try {
+      const surveyResponse = await axios.post('/api/surveys', {
+        title: surveyData.value.title,
+        description: surveyData.value.description,
+        start_time: surveyData.value.start_time,
+        end_time: surveyData.value.end_time,
+        status: surveyData.value.status,
+        owner_id: surveyData.value.owner_id,
+        modified: surveyData.value.modified,
+      });
+
+      const surveyId = surveyResponse.data.id;
+
+      for (const [index, question] of surveyData.value.questions.entries()) {
+        const questionResponse = await axios.post('/api/questions', {
+          survey_id: surveyId,
+          type: question.type,
+          title: question.title,
+          line_num: index + 1,
+          required: question.required,
+        });
+
+        const questionId = questionResponse.data.id;
+
+        for (const [optionIndex, option] of question.options.entries()) {
+          await axios.post('/api/options', {
+            question_id: questionId,
+            text: option.text,
+            line_num: optionIndex + 1,
+          });
+        }
+      }
+
+      ElMessage({
+        message: '问卷发布成功！',
+        type: 'success',
+      });
+
+      router.go(-1);
+    } catch (error) {
+      ElMessage.error('发布问卷时出错，请重试');
+    }
+  }
+
+};
+</script>
+
+<style scoped>
 .left-panel {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   padding: 10px;
   border-right: 1px solid #ddd;
+  
 }
 
 .left-panel .el-button {
-  flex: 0 0 calc(50% - 10px); /* 每个按钮占据50%的宽度，减去间距 */
-  margin: 5px; /* 设置按钮的上下间距 */
+  flex: 0 0 calc(50% - 10px);
+  margin: 5px;
 }
 
 .right-panel {
@@ -113,10 +180,10 @@ const completeEditing = () => {
 }
 
 ::v-deep(.title-input .el-input__inner) {
-  text-align: center; /* 文字居中 */
-  font-weight: bold; /* 加粗 */
-  color: #000; /* 黑色字体 */
-  font-size: 20px; /* 字体加大 */
+  text-align: center;
+  font-weight: bold;
+  color: #000;
+  font-size: 30px;
 }
 
 .questionnaire-body {
