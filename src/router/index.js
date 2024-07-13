@@ -64,7 +64,7 @@ const router = createRouter({
             path: '/admin',
             name: 'admin',
             redirect: '/admin/adminQuestionnaire',
-            component: () => import('@/views/admin/index.vue'),
+            component: () => import('@/views/admin/adminIndex.vue'),
             meta: {
                 // 页面标题title
                 title: '问卷易管理平台'
