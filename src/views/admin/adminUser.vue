@@ -2,9 +2,12 @@
 import {onMounted, reactive, ref} from 'vue'
 import axios from "axios";
 import {ElMessage, ElMessageBox} from "element-plus";
+import {Search} from "@element-plus/icons-vue";
 
+// dev 用
 let userData = ref([
   {
+    id: 123,
     name: '企业1',
     president: '张三',
     email: 'pwwwle@gmail.com',
@@ -13,6 +16,7 @@ let userData = ref([
     update_time: '2021-09-01'
   },
   {
+    id: 234,
     name: '企业2',
     president: '李四',
     email: 'rtyuiohg@qq.com',
@@ -21,6 +25,7 @@ let userData = ref([
     update_time: '2021-09-01'
   },
   {
+    id: 345,
     name: '企业3',
     president: '王五',
     email: 'sbfnioeaibfi@163.com',
@@ -51,6 +56,28 @@ onMounted(() => {
   fetchUserData(currentPage.value, pageSize.value);
 })
 
+const input = ref('')
+const results = ref([]);
+
+// 处理搜索逻辑
+const handleSearch = async () => {
+  try {
+    const response = await axios.get(`http://47.121.187.213:8080/admin/selectOneByNameUnClear`, {
+      params: {
+        name: input.value
+      }
+    });
+    if (response.status === 200) {
+      results.value = response.data
+      console.log('搜索结果:', results.value)
+    } else {
+      console.error('搜索失败:', response.status);
+    }
+  } catch (error) {
+    console.error('搜索失败:', error);
+  }
+}
+
 // 分页变化的方法
 const handleSizeChange = (val) => {
   pageSize.value = val;
@@ -61,9 +88,6 @@ const handleCurrentChange = (val) => {
   currentPage.value = val;
   fetchUserData(currentPage.value, pageSize.value);
 };
-
-// 弹出添加窗口可见行
-//let dialogVisible = ref(false);
 
 // 新增企业信息
 const user = reactive({
@@ -119,15 +143,15 @@ const clearSelections = () => {
 };
 
 const deleteUsers = () => {
+  // todo
   console.log('delete users:', selectedUsers.value);
 };
 
 const handleEdit = () => {
+  // todo
   console.log('edit')
 }
 const handleDelete = async (id) => {
-  console.log('delete')
-
   try {
     const response = await axios.delete(`http://47.121.187.213:8080/admin/deleteOneById`, {
       params: {
@@ -145,7 +169,6 @@ const handleDelete = async (id) => {
     console.error('删除企业失败: ', error);
   }
 }
-
 </script>
 
 
@@ -155,6 +178,23 @@ const handleDelete = async (id) => {
     <template #header>
       <div class="card-header">
         <span>企业管理</span>
+        <!-- 搜索框 -->
+        <div class="search">
+          <el-input
+              v-model="input"
+              style="max-width: 600px"
+              placeholder="请输入企业名称"
+              class="input-with-select"
+          >
+            <template #prepend>
+              <el-button @click="handleSearch">
+                <el-icon>
+                  <Search/>
+                </el-icon>
+              </el-button>
+            </template>
+          </el-input>
+        </div>
         <el-button type="primary" size="default" plain @click="dialogVisible=true">添加</el-button>
         <!-- 添加企业信息弹窗 -->
         <el-dialog v-model="dialogVisible" title="添加企业信息" :before-close="handleClose" draggable>
@@ -178,6 +218,7 @@ const handleDelete = async (id) => {
     <!-- 卡片内容 -->
     <el-table ref="userTableRef" :data="userData" style="width: 100% " @selection-change="handleSelectionChange">
       <el-table-column fixed type="selection" width="55"/>
+      <el-table-column prop="id" label="ID" min-width="80"/>
       <el-table-column fixed prop="name" label="名称" width="120"/>
       <el-table-column prop="president" label="代表人" min-width="120"/>
       <el-table-column prop="email" label="邮箱" min-width="200"/>
@@ -218,7 +259,6 @@ const handleDelete = async (id) => {
   </el-card>
 </template>
 
-
 <style scoped>
 .card-header {
   display: flex;
@@ -241,5 +281,10 @@ const handleDelete = async (id) => {
   padding: 20px;
 }
 
-
+.search {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
 </style>
