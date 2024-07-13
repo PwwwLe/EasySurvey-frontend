@@ -232,8 +232,7 @@ const register = () => {
 }
 
 body {
-  background-color: #c9d6ff;
-  background: linear-gradient(to right, #e2e2e2, #c9d6ff);
+  background: #c9d6ff linear-gradient(to right, #e2e2e2, #c9d6ff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -399,13 +398,11 @@ body {
 }
 
 .toggle {
-  background-color: #512da8;
   height: 100%;
-  background: linear-gradient(to right, #5c6bc0, #512da8);
+  background: #512da8 linear-gradient(to right, #5c6bc0, #512da8);
   color: #fff;
   position: relative;
   left: -100%;
-  height: 100%;
   width: 200%;
   transform: translateX(0);
   transition: all 0.6s ease-in-out;
