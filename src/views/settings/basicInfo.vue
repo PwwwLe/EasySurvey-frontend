@@ -52,11 +52,16 @@ function ToChangeBasicInfo() {
     router.push('/user/changeBasicInfo')
 }
 
+function goToAdmin() {
+  router.push('/admin/adminUser');
+}
+
 </script>
 
 <template>
     basicInfo
     <button type="text" @click="getBasicInfo">拉取用户基本信息</button>
+    <el-button type="primary" @click="goToAdmin">跳转到管理员页面</el-button>
 
     <el-card class="user-info-card">
         <div class="avatar-container">
