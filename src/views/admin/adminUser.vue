@@ -3,26 +3,39 @@ import {onMounted, reactive, ref} from 'vue'
 import axios from "axios";
 import {ElMessage} from "element-plus";
 
-const userData = ref([])
+let userData = ref([])
+let total = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const background = ref(false)
 const disabled = ref(false)
 
 
-const fetchUserData = async () => {
+const fetchUserData = async (pageNum = 1, pageSize = 10) => {
   try {
-    const response = await axios.get('http://47.121.187.213:8080/user/userInfo');
+    const response = await axios.get(`http://47.121.187.213:8080/admin/selectAll?pageNum=${pageNum}&pageSize=${pageSize}`);
     console.log(response)
-    userData.value = response.data;
+    total = response.data.total
+    userData = response.data.items
   } catch (error) {
     console.error('读取用户数据时发生错误: ', error);
   }
 }
 
 onMounted(() => {
-  fetchUserData();
+  fetchUserData(currentPage.value, pageSize.value);
 })
+
+// 分页变化的方法
+const handleSizeChange = (val) => {
+  pageSize.value = val;
+  fetchUserData(currentPage.value, pageSize.value);
+};
+
+const handleCurrentChange = (val) => {
+  currentPage.value = val;
+  fetchUserData(currentPage.value, pageSize.value);
+};
 
 // 弹出添加窗口可见行
 const dialogVisible = ref(false);
@@ -61,13 +74,6 @@ const handleEdit = () => {
 }
 const handleDelete = () => {
   console.log('delete')
-}
-
-const handleSizeChange = (val) => {
-  console.log(`${val} items per page`)
-}
-const handleCurrentChange = (val) => {
-  console.log(`current page: ${val}`)
 }
 
 </script>
@@ -118,22 +124,19 @@ const handleCurrentChange = (val) => {
     </el-table>
 
     <!-- 卡片底部 -->
-    <template #footer>
-      <div class="demo-pagination-block">
-        <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :page-sizes="[10, 20, 30, 40]"
-            :size="'default'"
-            :disabled="disabled"
-            :background="background"
-            layout="jumper, total, sizes, prev, pager, next"
-            :total="userData.length"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-        />
-      </div>
-    </template>
+    <div class="pagination-block">
+      <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :size="'default'"
+          :disabled="disabled"
+          :background="background"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+      />
+    </div>
   </el-card>
 </template>
 
@@ -155,7 +158,7 @@ const handleCurrentChange = (val) => {
   gap: 10px;
 }
 
-.demo-pagination-block {
+.pagination-block {
   text-align: center;
   padding: 20px;
 }
