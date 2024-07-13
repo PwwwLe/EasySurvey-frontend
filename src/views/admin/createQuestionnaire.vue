@@ -59,6 +59,7 @@ const toggleEditing = (index) => {
 
 const submitSurvey = async () => {
   if (!surveyData.value.title) {
+    console.log(surveyData.value.title)
     ElMessage({
       message: '请填写问卷标题',
       type: 'warning',

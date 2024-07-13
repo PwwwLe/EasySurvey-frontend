@@ -36,7 +36,7 @@ get("/api/user/userInfo", (data) => {
 <template>
     <el-container style="height: 100%">
         <el-header class="main-container-header">
-            <el-text tag="b" style="margin-left: 15px; font-size: x-large">问卷调查系统</el-text>
+            <el-text tag="b" style="margin-left: 15px; font-size: x-large">问卷易</el-text>
             <div style="flex: 1" class="user-info">
                 <el-avatar :src="user.avatar"></el-avatar>
             </div>
