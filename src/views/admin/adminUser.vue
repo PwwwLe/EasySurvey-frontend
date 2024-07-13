@@ -186,7 +186,7 @@ const handleDelete = async (id) => {
               placeholder="请输入企业名称"
               class="input-with-select"
           >
-            <template #prepend>
+            <template #append>
               <el-button @click="handleSearch">
                 <el-icon>
                   <Search/>
@@ -195,22 +195,7 @@ const handleDelete = async (id) => {
             </template>
           </el-input>
         </div>
-        <el-button type="primary" size="default" plain @click="dialogVisible=true">添加</el-button>
-        <!-- 添加企业信息弹窗 -->
-        <el-dialog v-model="dialogVisible" title="添加企业信息" :before-close="handleClose" draggable>
-          <el-form :model="user" label-width="120px">
-            <el-form-item label="企业名称">
-              <el-input v-model="user.name" placeholder="请输入企业名称"></el-input>
-            </el-form-item>
-            <el-form-item label="密码">
-              <el-input v-model="user.password" placeholder="请输入密码" type="password"></el-input>
-            </el-form-item>
-          </el-form>
-          <div class="dialog-footer">
-            <el-button @click="dialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="handleAdd">确认</el-button>
-          </div>
-        </el-dialog>
+
       </div>
     </template>
 
@@ -235,11 +220,31 @@ const handleDelete = async (id) => {
       </el-table-column>
     </el-table>
 
-    <div style="margin-top: 20px">
+    <div class="button-container">
       <el-button size="default" @click="clearSelections">
         重置选择
       </el-button>
-      <el-button size="default" @click="deleteUsers" type="danger">批量删除</el-button>
+      <el-button size="default" @click="deleteUsers" type="danger">
+        批量删除
+      </el-button>
+      <el-button type="primary" size="default" plain @click="dialogVisible = true">
+        添加
+      </el-button>
+      <!-- 添加企业信息弹窗 -->
+      <el-dialog v-model="dialogVisible" title="添加企业信息" :before-close="handleClose" draggable>
+        <el-form :model="user" label-width="120px">
+          <el-form-item label="企业名称">
+            <el-input v-model="user.name" placeholder="请输入企业名称"></el-input>
+          </el-form-item>
+          <el-form-item label="密码">
+            <el-input v-model="user.password" placeholder="请输入密码" type="password"></el-input>
+          </el-form-item>
+        </el-form>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleAdd">确认</el-button>
+        </div>
+      </el-dialog>
     </div>
 
     <!-- 卡片底部 -->
@@ -268,6 +273,9 @@ const handleDelete = async (id) => {
 
 .dialog-footer {
   text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .operation-buttons {
@@ -287,4 +295,12 @@ const handleDelete = async (id) => {
   align-items: center;
   margin: 20px 0;
 }
+
+.button-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
 </style>
