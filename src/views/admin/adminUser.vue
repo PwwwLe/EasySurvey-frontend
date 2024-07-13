@@ -5,35 +5,7 @@ import {ElMessage, ElMessageBox} from "element-plus";
 import {Search} from "@element-plus/icons-vue";
 
 // dev 用
-let userData = ref([
-  {
-    id: 123,
-    name: '企业1',
-    president: '张三',
-    email: 'pwwwle@gmail.com',
-    business_scope: 'IT',
-    create_time: '2021-09-01',
-    update_time: '2021-09-01'
-  },
-  {
-    id: 234,
-    name: '企业2',
-    president: '李四',
-    email: 'rtyuiohg@qq.com',
-    business_scope: 'IT',
-    create_time: '2021-09-01',
-    update_time: '2021-09-01'
-  },
-  {
-    id: 345,
-    name: '企业3',
-    president: '王五',
-    email: 'sbfnioeaibfi@163.com',
-    business_scope: 'IT',
-    create_time: '2021-09-01',
-    update_time: '2021-09-01'
-  },
-])
+let userData = ref([])
 let total = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -142,9 +114,23 @@ const clearSelections = () => {
   userTableRef.value?.clearSelection();
 };
 
-const deleteUsers = () => {
-  // todo
+const deleteUsers = async () => {
   console.log('delete users:', selectedUsers.value);
+  try {
+    const ids = selectedUsers.value.join(',')
+    const response = await axios.delete(`http://47.121.187.213:8080/admin/deleteBatchById`, {
+      params: {ids}
+    });
+    if (response.status === 200) {
+      console.log('删除用户成功:', selectedUsers.value);
+      selectedUsers.value = [];
+      await fetchUserData(currentPage.value, pageSize.value);
+    } else {
+      console.error('删除用户失败:', response);
+    }
+  } catch (error) {
+    console.error('删除用户失败:', error);
+  }
 };
 
 const handleEdit = () => {
@@ -224,8 +210,12 @@ const handleDelete = async (id) => {
       <el-button size="default" @click="clearSelections">
         重置选择
       </el-button>
-      <el-button size="default" @click="deleteUsers" type="danger">
-        批量删除
+      <el-button
+          size="default"
+          @click="deleteUsers"
+          type="danger"
+          :disabled="!selectedUsers.length"
+      >批量删除
       </el-button>
       <el-button type="primary" size="default" plain @click="dialogVisible = true">
         添加
