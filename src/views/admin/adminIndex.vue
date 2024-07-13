@@ -4,7 +4,7 @@ import {get} from "@/net";
 import {ref} from "vue";
 import router from "@/router";
 import {useStore} from "@/store";
-import {Location, Memo, Menu, Setting, User} from "@element-plus/icons-vue";
+import {Expand, Fold, Memo, User} from "@element-plus/icons-vue";
 
 const store = useStore()
 const loading = ref(true)
@@ -15,13 +15,6 @@ const toggleCollapse = () => {
   isCollapse.value = !isCollapse.value;
 };
 
-function handleOpen(key, keyPath) {
-  console.log(key, keyPath);
-}
-
-function handleClose(key, keyPath) {
-  console.log(key, keyPath);
-}
 </script>
 
 
@@ -29,8 +22,11 @@ function handleClose(key, keyPath) {
   <el-container style="height: 100%">
     <el-header class="main-container-header">
       <div class="toggle-icon" @click="toggleCollapse">
-        <el-icon>
-          <Menu />
+        <el-icon v-if="isCollapse" size="20px">
+          <Expand />
+        </el-icon>
+        <el-icon v-else size="20px">
+          <Fold />
         </el-icon>
       </div>
       <el-text tag="b" style="margin-left: 15px; font-size: x-large">问卷易</el-text>
@@ -46,8 +42,6 @@ function handleClose(key, keyPath) {
           router
           :default-active="$route.path"
           :collapse="isCollapse"
-          @open="handleOpen"
-          @close="handleClose"
         >
           <el-menu-item index="/admin/adminQuestionnaire">
             <el-icon>

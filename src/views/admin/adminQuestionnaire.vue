@@ -100,7 +100,7 @@ const handleRemind = (questionnaire) => {
         <el-input
           v-model="searchContent"
           style="max-width: 600px"
-          placeholder="请输入问卷标题进行搜索..."
+          placeholder="请输入问卷标题"
           class="input-with-select"
         >
           <template #append>

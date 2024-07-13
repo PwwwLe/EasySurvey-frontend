@@ -149,42 +149,42 @@ function deleteAccessToken() {
 
 function login(username, password, role, success, failure = defaultFailure) {
     axios.post('/api/login', {
-        name: username,
+        username: username,
         password: password,
     }, {
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/json'
         }
     }).then(({ data }) => {
         console.log(data)
         console.log(role)
-        if (data.code === 1 && data.data.role === Number(role)) {
+
+        if (data.code === 200) {
             // 获取当前时间
             let currentDate = new Date();
             // 增加一个小时
             currentDate.setHours(currentDate.getHours() + 1);
-            storeAccessToken(data.msg, currentDate)
-            ElMessage.success(`登陆成功,欢迎 ${data.data.name} 进入!`)
-            success(data.data)
+            storeAccessToken(data.token, currentDate)
+            success()
         } else {
             defaultFailure(data.msg, data.code, '/api/login')
         }
-    }).catch(err => error(err))
+    }).catch(err => failure(err))
 }
 
 function Register(username, password, success, failure = defaultFailure) {
     console.log(username)
     console.log(password)
     axios.post('api/register', {
-        name: username,
+        username: username,
         password: password,
     }, {
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/json'
         }
     }).then(({ data }) => {
         console.log(data)
-        if (data.code === 1) {
+        if (data.code === 200) {
             ElMessage.success('注册成功，欢迎加入我们')
             console.warn(`注册成功，欢迎加入我们`)
             success(data.data)
@@ -289,7 +289,32 @@ function getImage(avatarUrl, success, failure = defaultError) {
         })
         .catch(err => error(err));
 }
+
+function getInfo(success, failure = defaultFailure) {
+    console.log(1);
+
+    // 获取 AccessToken 并转换为 Base64 编码（如果必要）
+    console.log(takeAccessToken())
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`
+        }
+    };
+
+    axios.get('/api/getInfo', config)
+        .then(({ data }) => {
+            console.log(data);
+            if (data.code === 200) {
+                success(data);
+            } else {
+                failure(data.msg, data.code, fullUrl);
+            }
+        })
+        .catch(err => failure(err));
+}
+
 /**
+ * 
  * 获取请求头
  */
 function accessHeader() {
@@ -336,4 +361,4 @@ function del(url, success, failure = defaultFailure) { // delete is a reserved w
 function unauthorized() {
     return !takeAccessToken();
 }
-export { login, get, post, put, patch, del, unauthorized, accessHeader, Register, UploadImage, getImage }
+export { login, get, post, put, patch, del, unauthorized, accessHeader, Register, UploadImage, getImage, getInfo }
