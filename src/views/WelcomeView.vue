@@ -2,7 +2,7 @@
 
 import { computed, reactive, ref } from "vue";
 import { ChatDotSquare, Lock, Message, User } from "@element-plus/icons-vue";
-import { login, get, post, Register } from "@/net";
+import { login, get, post, Register, getInfo } from "@/net";
 import { ElMessage } from "element-plus";
 import router from "@/router";
 
@@ -30,7 +30,16 @@ const loginFormRef = ref()
 function userLogin() {
   loginFormRef.value.validate((isValid) => {
     if (isValid) {
-      login(loginForm.username, loginForm.password, loginForm.role, () => { router.push('/user') })
+      login(loginForm.username, loginForm.password, loginForm.role, () => {
+        getInfo((data) => {
+          console.log(data)
+          //ElMessage.success(`登陆成功,欢迎 ${data.data.name} 进入!`)
+          if (data.user.role == 0)
+            router.push('/user')
+          else
+            router.push('/admin')
+        })
+      })
     }
   });
   //直接跳到主页，调试用
@@ -105,7 +114,10 @@ const register = () => {
       //     console.warn(`注册成功，欢迎加入我们`)
       //     router.push("/")
       // })
-      Register(registerForm.username, registerForm.password, () => { router.push("/") })
+      Register(registerForm.username, registerForm.password, () => {
+        router.push("/")
+        switchToLogin()
+      })
     } else {
       ElMessage.warning('请完整填写注册表单内容')
       console.warn(`请完整填写注册表单内容`)
@@ -451,5 +463,4 @@ body {
   width: 100%;
   margin-bottom: 20px;
 }
-
 </style>
