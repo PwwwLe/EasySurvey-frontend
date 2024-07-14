@@ -106,11 +106,12 @@ const saveOption = (index) => {
 <template>
   <div class="question-component" :class="{ 'editing': props.isEditing }" @click="toggleEditing">
     <div class="question-title">
-      <div @click="editQuestionTitle" v-if="!isEditingQuestionTitle" class="editable-text">
-        <el-text>{{
+      <div @click="editQuestionTitle" v-if="!isEditingQuestionTitle" >
+        <el-text class="editable-text">{{
             localQuestion.title || '点击修改题目标题'
           }}
         </el-text>
+        <span class="question-type">{{ getQuestionTypeLabel(localQuestion.type) }}</span>
       </div>
       <el-input
           v-model="localQuestion.title"
@@ -119,12 +120,11 @@ const saveOption = (index) => {
           @blur="saveQuestionTitle"
           class="title-input"
           ref="questionTitleInputRef"
+          @input="updateTitle($event)"
       />
-      <div class="question-type">
-        <span>{{ getQuestionTypeLabel(localQuestion.type) }}</span>
-      </div>
     </div>
-    <div v-if="localQuestion.type === 'single-choice'">
+    <div v-if="localQuestion.type === 'single-choice' || localQuestion.type === 'multiple-choice' ||
+    localQuestion.type === 'dropdown-single' || localQuestion.type === 'dropdown-multiple'">
       <div v-for="(option, index) in localQuestion.options" :key="index" class="option">
         <div class="option-text">
           <div @click="editOption(index)" v-if="!isEditingOptions[index]" class="editable-text">
@@ -139,21 +139,21 @@ const saveOption = (index) => {
               @input="updateOption(index, $event)"
           />
         </div>
-        <el-button :icon="Delete" @click="removeOption(index)">删除选项</el-button>
+        <el-button class="deleteButton":icon="Delete" @click="removeOption(index)">删除选项</el-button>
       </div>
       <el-button :icon="Plus" @click="addOption">添加选项</el-button>
     </div>
-    <div v-if="localQuestion.type === 'multiple-choice'">
+    <!-- <div v-if="localQuestion.type === 'multiple-choice'">
       <div v-for="(option, index) in localQuestion.options" :key="index" class="option">
         <el-input v-model="localQuestion.options[index].text" placeholder="选项" @input="updateOption(index, $event)"/>
         <el-button :icon="Delete" @click="removeOption(index)">删除选项</el-button>
       </div>
       <el-button :icon="Plus" @click="addOption">添加选项</el-button>
-    </div>
+    </div> -->
     <div v-if="localQuestion.type === 'short-answer'">
       <el-input type="textarea" placeholder="这是一个简答题" disabled/>
     </div>
-    <div v-if="localQuestion.type === 'dropdown-single'">
+    <!-- <div v-if="localQuestion.type === 'dropdown-single'">
       <div v-for="(option, index) in localQuestion.options" :key="index" class="option">
         <el-input v-model="localQuestion.options[index].text" placeholder="选项" @input="updateOption(index, $event)"/>
         <el-button :icon="Delete" @click="removeOption(index)">删除选项</el-button>
@@ -166,7 +166,7 @@ const saveOption = (index) => {
         <el-button :icon="Delete" @click="removeOption(index)">删除选项</el-button>
       </div>
       <el-button :icon="Plus" @click="addOption">添加选项</el-button>
-    </div>
+    </div> -->
     <div class="footer">
       <el-checkbox v-model="localQuestion.required" @change="() => emits('update-question', localQuestion.value)">
         是否必答
@@ -192,12 +192,29 @@ const saveOption = (index) => {
 
 .option {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 5px;
 }
 
 .editing {
   background-color: #d8d5d5;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  border-radius: 5px; /* 5px圆角 */
+}
+.editing:hover{
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+.editable-text{
+  cursor: pointer;
+  border: 3px solid transparent;
+  border-radius: 4px;
+  transition: border-color 0.3s;
+  }
+.editable-text:hover{
+  border-color: #dcdfe6;
 }
 
 .question-title {
@@ -211,6 +228,7 @@ const saveOption = (index) => {
   }
 
   .question-type {
+    display: inline-block;
     margin-left: 10px;
     color: #999;
     font-size: 14px;

@@ -1,10 +1,11 @@
 <script setup>
-import {ref, nextTick} from 'vue';
-import {ElButton, ElInput, ElDatePicker, ElMessage} from 'element-plus';
-import {Select} from '@element-plus/icons-vue'
+import { ref, nextTick } from 'vue';
+import { ElButton, ElInput, ElDatePicker, ElMessage } from 'element-plus';
+import { Select } from '@element-plus/icons-vue';
 import axios from 'axios';
 import question from '@/components/question.vue';
-import {useRouter} from 'vue-router'
+import { useRouter } from 'vue-router';
+import request from '@/utils/request.js';
 
 const router = useRouter();
 const surveyData = ref({
@@ -28,16 +29,15 @@ const addQuestion = (type) => {
     isEditing: false,
   };
 
-  if (type === 'multiple-choice' || type === 'dropdown-single' || type === 'dropdown-multiple' || type === 'single-choice' || type === 'single-choice') {
-    newQuestion.options.push({text: '', line_num: 1});
-    newQuestion.options.push({text: '', line_num: 2});
+  if (type === 'multiple-choice' || type === 'dropdown-single' || type === 'dropdown-multiple' || type === 'single-choice') {
+    newQuestion.options.push({ text: '', line_num: 1 });
+    newQuestion.options.push({ text: '', line_num: 2 });
   }
 
   surveyData.value.questions.push(newQuestion);
 };
 
 const updateQuestion = (index, updatedQuestion) => {
-  // console.log(updatedQuestion);
   surveyData.value.questions[index] = updatedQuestion;
   console.log(surveyData.value);
 };
@@ -51,65 +51,111 @@ const deleteQuestion = (index) => {
 };
 
 const toggleEditing = (index) => {
-  console.log("你好")
   surveyData.value.questions.forEach((q, i) => {
     q.isEditing = index === i;
   });
 };
 
-const submitSurvey = async () => {
+const validateSurvey = () => {
   if (!surveyData.value.title) {
-    console.log(surveyData.value.title)
     ElMessage({
       message: '请填写问卷标题',
       type: 'warning',
       plain: true,
-    })
-  } else {
-    try {
-      const surveyResponse = await axios.post('/api/surveys', {
-        title: surveyData.value.title,
-        description: surveyData.value.description,
-        start_time: surveyData.value.start_time,
-        end_time: surveyData.value.end_time,
-        status: surveyData.value.status,
-        owner_id: surveyData.value.owner_id,
-        modified: surveyData.value.modified,
-      });
+    });
+    return false;
+  }
 
-      const surveyId = surveyResponse.data.id;
-
-      for (const [index, question] of surveyData.value.questions.entries()) {
-        const questionResponse = await axios.post('/api/questions', {
-          survey_id: surveyId,
-          type: question.type,
-          title: question.title,
-          line_num: index + 1,
-          required: question.required,
-        });
-
-        const questionId = questionResponse.data.id;
-
-        for (const [optionIndex, option] of question.options.entries()) {
-          await axios.post('/api/options', {
-            question_id: questionId,
-            text: option.text,
-            line_num: optionIndex + 1,
-          });
-        }
-      }
-
+  for (const question of surveyData.value.questions) {
+    if (!question.title) {
       ElMessage({
-        message: '问卷发布成功！',
-        type: 'success',
+        message: '请填写问题标题',
+        type: 'warning',
+        plain: true,
       });
+      return false;
+    }
 
-      router.go(-1);
-    } catch (error) {
-      ElMessage.error('发布问卷时出错，请重试');
+    if (['multiple-choice', 'dropdown-single', 'dropdown-multiple', 'single-choice'].includes(question.type) && question.options.length === 0) {
+      ElMessage({
+        message: '问题至少得有一个选项',
+        type: 'warning',
+        plain: true,
+      });
+      return false;
     }
   }
+
+  return true;
 };
+
+const submitSurvey = async () => {
+  if (!validateSurvey()) {
+    return;
+  }
+
+  try {
+    // 创建问卷
+    const surveyResponse = await axios.post('/survey/createSurvey', {
+      title: surveyData.value.title,
+      description: surveyData.value.description,
+      start_time: surveyData.value.start_time,
+      end_time: surveyData.value.end_time,
+      status: surveyData.value.status,
+      owner_id: surveyData.value.owner_id,
+      modified: surveyData.value.modified,
+    });
+
+    const surveyId = surveyResponse.data.id;
+
+    // 构建问题列表
+    const questions = surveyData.value.questions.map((question, index) => ({
+      survey_id: surveyId,
+      type: question.type,
+      title: question.title,
+      line_num: index + 1,
+      required: question.required,
+    }));
+
+    // 创建问题
+    const questionResponse = await axios.post('/question/createQuestions', {
+      questions
+    });
+
+    // 获取创建的问题ID
+    const createdQuestions = questionResponse.data;
+
+    // 构建选项列表
+    const options = [];
+    surveyData.value.questions.forEach((question, index) => {
+      const questionId = createdQuestions[index].id;
+      question.options.forEach((option, optionIndex) => {
+        options.push({
+          question_id: questionId,
+          text: option.text,
+          line_num: optionIndex + 1,
+        });
+      });
+    });
+
+    // 创建选项
+    if (options.length > 0) {
+      await axios.post('/option/addOptions', {
+        options
+      });
+    }
+
+    ElMessage({
+      message: '问卷发布成功！',
+      type: 'success',
+    });
+
+    router.go(-1);
+  } catch (error) {
+    ElMessage.error('发布问卷时出错，请重试');
+  }
+};
+
 
 // 处理编辑事件
 const isEditingTitle = ref(false);
@@ -145,12 +191,12 @@ const saveDescription = () => {
     <!-- 题目选择 -->
     <el-aside width="20%">
       <div class="left-panel">
-        <el-button @click="addQuestion('single-choice')">单选</el-button>
-        <el-button @click="addQuestion('multiple-choice')">多选</el-button>
-        <el-button @click="addQuestion('dropdown-single')">下拉单选</el-button>
-        <el-button @click="addQuestion('dropdown-multiple')">下拉多选</el-button>
-        <el-button @click="addQuestion('short-answer')">简答</el-button>
-        <el-button @click="addQuestion('document')">文件上传</el-button>
+        <el-button type="primary" @click="addQuestion('single-choice')">单选</el-button>
+        <el-button type="primary" @click="addQuestion('multiple-choice')">多选</el-button>
+        <el-button type="primary" @click="addQuestion('dropdown-single')">下拉单选</el-button>
+        <el-button type="primary" @click="addQuestion('dropdown-multiple')">下拉多选</el-button>
+        <el-button type="primary" @click="addQuestion('short-answer')">简答</el-button>
+        <el-button type="primary" @click="addQuestion('document')">文件上传</el-button>
       </div>
     </el-aside>
     <!-- 问卷内容 -->
@@ -160,54 +206,44 @@ const saveDescription = () => {
           <div class="questionnaire-header">
             <!-- 修改标题 -->
             <div @click="editTitle" v-if="!isEditingTitle" class="editable-text">
-              <el-text style="font-size: 36px;
-                  text-align: center;
-                  display: block;
-                  color: #2c3e50;
-                  margin-bottom: 20px">{{
-                  surveyData.title || '点击修改问卷标题'
-                }}
-              </el-text>
+              <el-text
+                style="font-size: 36px; text-align: center; display: block; color: #2c3e50; margin-bottom: 20px"
+                >{{ surveyData.title || '点击修改问卷标题' }}</el-text>
             </div>
             <el-input
-                v-model="surveyData.title"
-                v-if="isEditingTitle"
-                placeholder="点击修改问卷标题"
-                @blur="saveTitle"
-                class="title-input"
-                ref="titleInputRef"
-                style="font-size: 36px;
-                  text-align: center;
-                  display: block;
-                  color: #2c3e50;
-                  margin-bottom: 20px"
+              v-model="surveyData.title"
+              v-if="isEditingTitle"
+              placeholder="点击修改问卷标题"
+              @blur="saveTitle"
+              class="title-input"
+              ref="titleInputRef"
+              style="font-size: 36px; text-align: center; display: block; color: #2c3e50; margin-bottom: 20px"
             />
             <!-- 修改描述 -->
             <div @click="editDescription" v-if="!isEditingDescription" class="editable-text">
-              <el-text type="info" style="font-size: 20px; text-align: center; display: block;">
-                {{ surveyData.description || '添加问卷描述' }}
-              </el-text>
+              <el-text type="info" style="font-size: 20px; text-align: center; display: block;"
+                >{{ surveyData.description || '添加问卷描述' }}</el-text>
             </div>
             <el-input
-                type="textarea"
-                v-model="surveyData.description"
-                v-if="isEditingDescription"
-                placeholder="添加问卷描述"
-                @blur="saveDescription"
-                ref="descriptionInputRef"
-                style="font-size: 20px; text-align: center; display: block;"
+              type="textarea"
+              v-model="surveyData.description"
+              v-if="isEditingDescription"
+              placeholder="添加问卷描述"
+              @blur="saveDescription"
+              ref="descriptionInputRef"
+              style="font-size: 20px; text-align: center; display: block;"
             />
           </div>
         </template>
         <div class="questionnaire-body">
           <question
-              v-for="(question, index) in surveyData.questions"
-              :key="index"
-              :question="question"
-              :isEditing="question.isEditing"
-              @update-question="updateQuestion(index, $event)"
-              @delete-question="deleteQuestion(index)"
-              @toggle-editing="toggleEditing(index)"
+            v-for="(question, index) in surveyData.questions"
+            :key="index"
+            :question="question"
+            :isEditing="question.isEditing"
+            @update-question="updateQuestion(index, $event)"
+            @delete-question="deleteQuestion(index)"
+            @toggle-editing="toggleEditing(index)"
           />
         </div>
 
@@ -215,7 +251,7 @@ const saveDescription = () => {
           <div class="questionnaire-footer">
             <div>
               <span>截止时间：</span>
-              <el-date-picker v-model="surveyData.end_time" type="datetime" placeholder="选择问卷截止时间"/>
+              <el-date-picker v-model="surveyData.end_time" type="datetime" placeholder="选择问卷截止时间" />
             </div>
             <el-button type="primary" @click="submitSurvey">发布问卷</el-button>
           </div>
@@ -231,9 +267,12 @@ const saveDescription = () => {
   flex-wrap: wrap;
   align-items: flex-start;
   padding: 10px;
-  border-right: 1px solid #ddd;
 }
 
+.left-panel .el-button {
+  flex: 0 0 calc(50% - 10px);
+  margin: 5px;
+}
 .questionnaire-header {
   margin-bottom: 20px;
 }
@@ -265,7 +304,7 @@ const saveDescription = () => {
   transition: border-color 0.3s;
 }
 
-.el-input[type="textarea"] {
+.el-input[type='textarea'] {
   resize: none;
 }
 
