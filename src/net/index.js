@@ -313,6 +313,32 @@ function getInfo(success, failure = defaultFailure) {
         .catch(err => failure(err));
 }
 
+// function fetchQuestionnaires(count, failure = defaultFailure) {
+//     const queryParams = {
+//         count: count.value.toString()
+//     }
+//     const url = '/api/survey/getSeveral'
+//     const queryString = new URLSearchParams(queryParams).toString();
+//     const fullUrl = `${url}?${queryString}`
+//     console.log(fullUrl)
+//     const config = {
+//         headers: {
+//             'Authorization': `Bearer ${takeAccessToken()}`
+//         }
+//     };
+
+//     axios.get(fullUrl, config)
+//         .then(({ data }) => {
+//             //console.log(data);
+//             if (data.code === 1) {
+                
+//             } else {
+//                 failure(data.msg, data.code, fullUrl);
+//             }
+//         })
+//         .catch(err => failure(err));
+// }
+
 /**
  * 
  * 获取请求头
@@ -361,4 +387,4 @@ function del(url, success, failure = defaultFailure) { // delete is a reserved w
 function unauthorized() {
     return !takeAccessToken();
 }
-export { login, get, post, put, patch, del, unauthorized, accessHeader, Register, UploadImage, getImage, getInfo }
+export { login, get, post, put, patch, del, unauthorized, accessHeader, takeAccessToken, Register, UploadImage, getImage, getInfo }

@@ -1,53 +1,44 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { takeAccessToken } from "@/net";
 import { Search, Plus } from '@element-plus/icons-vue'
 import questionnaire from '@/components/questionnaire.vue'
-import axios from 'axios'
+import request from '@/utils/request' // 导入封装的 axios 实例，实例导入时不加 {}
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const searchContent = ref('')
-const questionnaires = reactive([
-{
-    id: 1,
-    title: 'Customer Satisfaction Survey',
-    description: 'A survey to measure customer satisfaction with our services.',
-    create_time: '2024-07-12T10:00:00Z',
-    update_time: '2024-07-12T10:00:00Z',
-    start_time: '2024-07-15T08:00:00Z',
-    end_time: '2024-08-15T17:00:00Z',
-    status: 1
-  },
-  {
-    id: 2,
-    title: 'Employee Feedback Form',
-    description: 'A form for collecting feedback from employees about workplace conditions.',
-    create_time: '2024-07-10T09:30:00Z',
-    update_time: '2024-07-11T09:30:00Z',
-    start_time: '2024-07-11T08:00:00Z',
-    end_time: '2024-07-31T17:00:00Z',
-    status: 0
-  },
-  {
-    id: 3,
-    title: 'Product Evaluation Survey',
-    description: 'A survey to evaluate the new product launched last month.',
-    create_time: '2024-07-05T15:00:00Z',
-    update_time: '2024-07-10T12:00:00Z',
-    start_time: '2024-07-07T08:00:00Z',
-    end_time: '2024-07-25T17:00:00Z',
-    status: 1
-  }
-])
+const questionnaires = reactive([])
+let count = ref(1)
+// const hasMoreData = ref(true)
 
 const fetchQuestionnaires = async () => {
   try {
-    const response = await axios.get('/api/questionnaires') // 修改为实际接口
-    questionnaires.push(...response.data)
+    const queryParams = {
+      count: count.value.toString()
+    };
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${takeAccessToken()}`
+      },
+      params: queryParams
+    };
+
+    const response = await request.get('/survey/getSeveral', config);
+
+    console.log(response);
+      questionnaires.length = 0;
+      questionnaires.push(...response.data.data);
   } catch (error) {
-    console.error('Error fetching questionnaires:', error)
+    console.error('Error fetching questionnaires:', error);
+    ElMessage({
+      type: 'error',
+      message: '获取问卷时出错，请重试'
+    });
   }
-}
+};
 
 onMounted(() => {
   fetchQuestionnaires()
@@ -72,14 +63,61 @@ const handleDownload = (questionnaire) => {
   // 分析&下载问卷逻辑
 }
 
-const handleDelete = (questionnaire) => {
-  console.log('Delete:', questionnaire)
-  // 删除问卷逻辑
+const handleDelete = async (questionnaire) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除问卷 "${questionnaire.title}" 吗？`,
+      '删除问卷',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${takeAccessToken()}`
+      },
+      params: {
+        id :questionnaire.id,
+      }
+    };
+
+    const response = await request.delete(`/survey/deleteSurvey`, config) // 修改为实际接口
+    console.log(response)
+    const index = questionnaires.findIndex(q => q.id === questionnaire.id)
+    if (index !== -1) {
+      questionnaires.splice(index, 1)
+    }
+
+    ElMessage({
+      type: 'success',
+      message: '问卷删除成功!',
+    })
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage({
+        type: 'error',
+        message: '删除问卷时出错，请重试',
+      })
+    }
+  }
 }
 
 const handleRemind = (questionnaire) => {
   console.log('Remind:', questionnaire)
   // 提醒问卷逻辑
+}
+
+const handleScroll = async (event) => {
+  const { scrollTop, clientHeight, scrollHeight } = event.target
+
+  if (scrollTop + clientHeight >= scrollHeight - 10 ) {
+    count.value++
+    console.log("count为：" + count.value)
+    await fetchQuestionnaires()
+  }
 }
 </script>
 
@@ -110,7 +148,7 @@ const handleRemind = (questionnaire) => {
       </div>
     </div>
 
-    <div class="main">
+    <div class="main" @scroll="handleScroll" ref="scrollContainer">
       <questionnaire
         v-for="item in questionnaires"
         :key="item.id"
@@ -122,6 +160,7 @@ const handleRemind = (questionnaire) => {
         @remind="handleRemind"
         style="margin-bottom: 10px;"
       ></questionnaire>
+      <!-- <el-empty v-if="!hasMoreData && questionnaires.length === 0" description="没有更多问卷"></el-empty> -->
     </div>
   </div>
 </template>
@@ -130,21 +169,21 @@ const handleRemind = (questionnaire) => {
 .out{
   margin: 0;
   padding: 0;
-  // background-color: aqua;
   width: 100%;
-  // max-width: 100%;
+
   .header{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    // background-color: red;
     height: 50px;
     .input-with-select{
       padding-right: 20px;
     }
   }
-  
+
+  .main{
+    height: 80vh;
+    overflow-y: auto;
+  }
 }
-
-
 </style>
