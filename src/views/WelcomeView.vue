@@ -301,9 +301,9 @@ body {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
   position: relative;
   overflow: hidden;
-  width: 768px;
+  width: 960px;
   max-width: 100%;
-  min-height: 480px;
+  min-height: 600px;
 }
 
 .container p {
@@ -495,6 +495,6 @@ body {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 5px;
+  margin-bottom: 20px;
 }
 </style>
