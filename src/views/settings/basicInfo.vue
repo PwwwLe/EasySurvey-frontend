@@ -25,6 +25,7 @@ function getIndustryNames(industryArray) {
 
 // 获取用户基本信息
 get('/api/user/userInfo', data => {
+    console.log(data)
     user.avatar = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
     user.name = data.user.name || '未编写';
     user.president = data.user.president || '未编写';
@@ -40,6 +41,7 @@ get('/api/user/userInfo', data => {
 
 function getBasicInfo() {
     get("/api/user/userInfo", (data) => {
+        console.log(data)
         getImage(data.user.avatar, (data) => {
             console.log(data)
             user.avatar = 'data:image/png;base64,' + data.data.data
@@ -52,16 +54,11 @@ function ToChangeBasicInfo() {
     router.push('/user/changeBasicInfo')
 }
 
-function goToAdmin() {
-  router.push('/admin/adminUser');
-}
-
 </script>
 
 <template>
     basicInfo
     <button type="text" @click="getBasicInfo">拉取用户基本信息</button>
-    <el-button type="primary" @click="goToAdmin">跳转到管理员页面</el-button>
 
     <el-card class="user-info-card">
         <div class="avatar-container">
