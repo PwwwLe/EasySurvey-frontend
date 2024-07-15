@@ -323,7 +323,8 @@ function accessHeader() {
     if (takeAccessToken())
         return {
             //'Authorization': `Bearer ${takeAccessToken()}`
-            'Authorization': `Bearer ${takeAccessToken()}`
+            'Authorization': `Bearer ${takeAccessToken()}`,
+            'Content-Type': 'application/json'
         }
     else return {};
 }
