@@ -1,19 +1,22 @@
 <script setup>
 
-import {get} from "@/net";
 import {ref} from "vue";
-import router from "@/router";
 import {useStore} from "@/store";
-import {Expand, Fold, Memo, User} from "@element-plus/icons-vue";
+import {Close, Expand, Fold, Memo, User} from "@element-plus/icons-vue";
+import {useRouter} from "vue-router";
 
 const store = useStore()
-const loading = ref(true)
+const router = useRouter()
 
 const isCollapse = ref(true)
 
 const toggleCollapse = () => {
   isCollapse.value = !isCollapse.value;
 };
+
+const handleLogout = () => {
+  store.logout(router)
+}
 
 </script>
 
@@ -23,10 +26,10 @@ const toggleCollapse = () => {
     <el-header class="main-container-header">
       <div class="toggle-icon" @click="toggleCollapse">
         <el-icon v-if="isCollapse" size="20px">
-          <Expand />
+          <Expand/>
         </el-icon>
         <el-icon v-else size="20px">
-          <Fold />
+          <Fold/>
         </el-icon>
       </div>
       <el-text tag="b" style="margin-left: 15px; font-size: x-large">问卷易</el-text>
@@ -38,14 +41,14 @@ const toggleCollapse = () => {
     <el-container>
       <el-aside :width="isCollapse ? '64px' : '230px'" class="sidebar">
         <el-menu
-          style="height: 100%"
-          router
-          :default-active="$route.path"
-          :collapse="isCollapse"
+            style="height: 100%"
+            router
+            :default-active="$route.path"
+            :collapse="isCollapse"
         >
           <el-menu-item index="/admin/adminQuestionnaire">
             <el-icon>
-              <Memo />
+              <Memo/>
             </el-icon>
             <template #title>
               <span v-show="!isCollapse">问卷管理</span>
@@ -53,10 +56,17 @@ const toggleCollapse = () => {
           </el-menu-item>
           <el-menu-item index="/admin/adminUser">
             <el-icon>
-              <User />
+              <User/>
             </el-icon>
             <template #title>
               <span v-show="!isCollapse">企业管理</span>
+            </template>
+          </el-menu-item>
+          <el-divider></el-divider>
+          <el-menu-item @click="handleLogout">
+            <el-icon><Close /></el-icon>
+            <template #title>
+              <span v-show="!isCollapse">退出登录</span>
             </template>
           </el-menu-item>
         </el-menu>
@@ -65,7 +75,7 @@ const toggleCollapse = () => {
       <el-main style="padding: 0">
         <el-scrollbar style="height: calc(100vh - 55px)">
           <router-view v-slot="{ Component }">
-            <component :is="Component" style="height: 100%" />
+            <component :is="Component" style="height: 100%"/>
           </router-view>
         </el-scrollbar>
       </el-main>

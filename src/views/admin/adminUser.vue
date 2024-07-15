@@ -3,6 +3,7 @@ import {onMounted, reactive, ref} from 'vue'
 import axios from "axios";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {Search} from "@element-plus/icons-vue";
+import {accessHeader} from "@/net/index.js";
 
 // dev 用
 let userData = ref([])
@@ -15,7 +16,11 @@ const disabled = ref(false)
 
 const fetchUserData = async (pageNum = 1, pageSize = 10) => {
   try {
-    const response = await axios.get(`http://47.121.187.213:8080/admin/selectAll?pageNum=${pageNum}&pageSize=${pageSize}`);
+    const response = await axios.get(`http://47.121.187.213:8080/admin/selectAll?pageNum=${pageNum}&pageSize=${pageSize}`, {
+      headers: {
+        ...accessHeader()
+      }
+    });
     console.log(response)
     total = response.data.total
     userData = response.data.items
@@ -35,6 +40,9 @@ const results = ref([]);
 const handleSearch = async () => {
   try {
     const response = await axios.get(`http://47.121.187.213:8080/admin/selectOneByNameUnClear`, {
+      headers: {
+        ...accessHeader()
+      },
       params: {
         name: input.value
       }
@@ -45,7 +53,8 @@ const handleSearch = async () => {
     } else {
       console.error('搜索失败:', response.status);
     }
-  } catch (error) {
+  } catch
+      (error) {
     console.error('搜索失败:', error);
   }
 }
@@ -76,7 +85,8 @@ const handleAdd = async () => {
       password: user.password
     }, {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...accessHeader()
       }
     });
     if (response.status === 200) {
@@ -119,7 +129,10 @@ const deleteUsers = async () => {
   try {
     const ids = selectedUsers.value.join(',')
     const response = await axios.delete(`http://47.121.187.213:8080/admin/deleteBatchById`, {
-      params: {ids}
+      params: {ids},
+      headers: {
+        ...accessHeader()
+      }
     });
     if (response.status === 200) {
       console.log('删除用户成功:', selectedUsers.value);
@@ -142,6 +155,9 @@ const handleDelete = async (id) => {
     const response = await axios.delete(`http://47.121.187.213:8080/admin/deleteOneById`, {
       params: {
         id: id
+      },
+      headers: {
+        ...accessHeader()
       }
     });
     if (response.status === 200) {
