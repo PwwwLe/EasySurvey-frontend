@@ -38,10 +38,10 @@ function internalPost(url, queryParams, data, header, success, failure, error = 
 }
 
 function internalGet(url, header, success, failure, error = defaultError) {
-    //console.log(url)
-    //console.log(header)
+    console.log(url)
+    console.log(header)
     axios.get(url, { headers: header }).then(({ data }) => {
-        //console.log(data)
+        console.log(data)
         if (data.code === 1) {
             success(data.data)
         } else {
@@ -217,7 +217,7 @@ function UploadImage(url, queryParams, data, success, failure = defaultFailure) 
     // 定义 Axios 配置
     const config = {
         headers: {
-            'Authorization': `${takeAccessToken()}`,
+            'Authorization': `Bearer ${takeAccessToken()}`,
             'Content-Type': 'multipart/form-data'
         }
     };
@@ -247,7 +247,7 @@ function updateAvatar(avatarUrl, failure = defaultFailure) {
     console.log(fullUrl)
     const config = {
         headers: {
-            'Authorization': `${takeAccessToken()}`
+            'Authorization': `Bearer ${takeAccessToken()}`
         }
     };
 
@@ -264,7 +264,9 @@ function updateAvatar(avatarUrl, failure = defaultFailure) {
 }
 
 function getImage(avatarUrl, success, failure = defaultError) {
-    //console.log(avatarUrl)
+    console.log(avatarUrl)
+    if (avatarUrl == null)
+        return
     const queryParams = {
         id: avatarUrl
     }
@@ -274,13 +276,13 @@ function getImage(avatarUrl, success, failure = defaultError) {
     //console.log(fullUrl)
     const config = {
         headers: {
-            'Authorization': `${takeAccessToken()}`
+            'Authorization': `Bearer ${takeAccessToken()}`
         }
     };
 
     axios.get(fullUrl, config)
         .then(({ data }) => {
-            //console.log(data);
+            console.log(data);
             if (data.code === 1) {
                 success(data)
             } else {
@@ -321,7 +323,7 @@ function accessHeader() {
     if (takeAccessToken())
         return {
             //'Authorization': `Bearer ${takeAccessToken()}`
-            'Authorization': `${takeAccessToken()}`
+            'Authorization': `Bearer ${takeAccessToken()}`
         }
     else return {};
 }
