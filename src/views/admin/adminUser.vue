@@ -24,7 +24,6 @@ const fetchUserData = async (pageNum = 1, pageSize = 10) => {
         timestamp: new Date().getTime()
       }
     });
-    console.log(response)
     total.value = response.data.data.totle
     userData.value = response.data.data.items.map(item => {
       item.user.createTime = formatDateTime(item.user.createTime)
@@ -62,7 +61,6 @@ const handleSearch = async () => {
         item.updateTime = item.updateTime ? formatDateTime(item.updateTime) : item.createTime
         return item
       })
-      console.log('搜索结果:', result.value)
     } else {
       console.error('搜索失败:', response.status);
     }
@@ -97,7 +95,6 @@ const user = reactive({
 
 // 管理员添加企业的方法
 const handleAdd = async () => {
-  console.log("add")
   try {
     const response = await axios.post('/api/admin/addUser', {
       name: user.name,
@@ -166,10 +163,76 @@ const deleteUsers = async () => {
   }
 };
 
-const handleEdit = (id) => {
-  // todo
-  console.log('edit')
+const editDialogVisible = ref(false);
+const editData = reactive({
+  id: '',
+  name: '',
+  president: '',
+  email: '',
+  businessScope: ''
+});
+
+const handleEdit = async (id) => {
+  try {
+    // 获取企业的基本信息
+    const response = await axios.get(`/api/admin/selectOneById/${id}`, {
+      headers: {
+        ...accessHeader()
+      }
+    });
+    if (response.status === 200) {
+      const item = response.data.data;
+      editData.id = item.id;
+      editData.name = item.name;
+      editData.president = item.president || '';
+      editData.email = item.email || '';
+      editData.businessScope = item.businessScope || '';
+      editDialogVisible.value = true;
+    } else {
+      ElMessage.error("获取企业信息失败");
+    }
+  } catch (error) {
+    ElMessage.error("获取企业信息失败");
+    console.error('获取企业信息失败: ', error);
+  }
 }
+
+const submitEdit = async () => {
+  try {
+    const response = await axios.patch(`/api/admin/updateBaseInfoAdmin`, {
+          id: editData.id,
+          president: editData.president,
+          email: editData.email,
+          businessScope: editData.businessScope
+        }, {
+          headers: {
+            ...accessHeader()
+          }
+        }
+    );
+    if (response.status === 200) {
+      ElMessage.success("编辑企业信息成功！");
+      editDialogVisible.value = false;
+      await fetchUserData();
+    } else {
+      ElMessage.error("编辑企业信息失败");
+    }
+  } catch (error) {
+    ElMessage.error("编辑企业信息失败");
+    console.error('编辑企业信息失败: ', error);
+  }
+};
+
+const handleEditClose = (done) => {
+  ElMessageBox.confirm('确认关闭？')
+      .then(() => {
+        done();
+      })
+      .catch(() => {
+        ElMessage.info('取消关闭');
+      });
+}
+
 const handleDelete = async (id) => {
   try {
     const response = await axios.delete(`/api/admin/deleteOneById`, {
@@ -236,10 +299,8 @@ const formatDateTime = (time) => {
             </template>
           </el-input>
         </div>
-
       </div>
     </template>
-
 
     <!-- 卡片内容 -->
     <el-table v-show="!isSearching" ref="userTableRef" :data="userData" style="width: 100% "
@@ -256,7 +317,7 @@ const formatDateTime = (time) => {
         <template #default="scope">
           <div class="operation-buttons">
             <el-button link type="primary" size="small" @click="handleEdit(scope.row.user.id)">编辑</el-button>
-            <el-button link type="warning" size="small" @click="handleDelete(scope.row.user.id)">删除</el-button>
+            <el-button link type="danger" size="small" @click="handleDelete(scope.row.user.id)">删除</el-button>
           </div>
         </template>
       </el-table-column>
@@ -276,14 +337,36 @@ const formatDateTime = (time) => {
         <template #default="scope">
           <div class="operation-buttons">
             <el-button link type="primary" size="small" @click="handleEdit(scope.row.user.id)">编辑</el-button>
-            <el-button link type="warning" size="small" @click="handleDelete(scope.row.user.id)">删除</el-button>
+            <el-button link type="danger" size="small" @click="handleDelete(scope.row.user.id)">删除</el-button>
           </div>
         </template>
       </el-table-column>
     </el-table>
 
+    <!--  编辑企业信息弹窗  -->
+    <el-dialog v-model="editDialogVisible" title="编辑企业信息" :before-close="handleEditClose">
+      <el-form :model="editData" label-width="120px">
+        <el-form-item label="企业名称">
+          <el-input v-model="editData.name" readonly></el-input>
+        </el-form-item>
+        <el-form-item label="代表人">
+          <el-input v-model="editData.president" placeholder="请输入代表人"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="editData.email" placeholder="请输入邮箱"></el-input>
+        </el-form-item>
+        <el-form-item label="经营范围">
+          <el-input v-model="editData.businessScope" placeholder="请输入经营范围"></el-input>
+        </el-form-item>
+      </el-form>
+      <div class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitEdit">确认</el-button>
+      </div>
+    </el-dialog>
+
     <div class="button-container">
-      <el-button size="default" @click="clearSelections">
+      <el-button size="default" @click="clearSelections" :disabled="!selectedUsers.length">
         重置选择
       </el-button>
       <el-button
