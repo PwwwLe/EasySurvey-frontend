@@ -213,7 +213,7 @@ const submitEdit = async () => {
     if (response.status === 200) {
       ElMessage.success("编辑企业信息成功！");
       editDialogVisible.value = false;
-      await fetchUserData();
+      await fetchUserData(currentPage.value, pageSize.value);
     } else {
       ElMessage.error("编辑企业信息失败");
     }
