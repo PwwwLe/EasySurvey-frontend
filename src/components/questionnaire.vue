@@ -37,16 +37,14 @@ const handleRemind = () => {
   <el-card style="width: 100%; margin-top: 20px; padding: 5px 10px 10px 10px;">
     <template #header>
       <div class="card-header">
-        <div class="head-left"><span>{{ questionnaire.title }}</span></div>
+        <div class="head-left">
+          <el-text style="font-size: larger">{{ questionnaire.title }}</el-text>
+          <el-progress :text-inside="true" :stroke-width="26" :percentage="70" />
+        </div>
         <div class="head-right">
-          <div class="ans-pro">
-            <span>答卷:{{ questionnaire.responses }} &ensp;&ensp;&ensp;</span>
-            <span>进度:{{ questionnaire.responses }} &ensp;&ensp;&ensp;</span>
-          </div>
-          
           <div class="time">
-            <span>创建时间:{{ questionnaire.start_time }}</span>
-            <span>截止时间:{{ questionnaire.end_time }}</span>
+            <span>创建时间:{{ questionnaire.startTime }}</span>
+            <span>截止时间:{{ questionnaire.endTime }}</span>
           </div>
         </div>
       </div>
@@ -115,15 +113,17 @@ const handleRemind = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  .head-left {
+    display: flex;
+    align-items: center;
+    .el-text {
+      margin-right: 10px;
+    }
+  }
   .head-right {
     display: flex;
     justify-content: center;
     align-items: center;
-    .ans-pro{
-      display: flex;
-      flex-direction: column;
-      font-size: smaller;
-    }
     .time {
       display: flex;
       flex-direction: column;
