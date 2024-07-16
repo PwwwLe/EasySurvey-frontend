@@ -1,11 +1,12 @@
 <script setup>
-import { ref, nextTick } from 'vue';
+import { ref, nextTick,watch  } from 'vue';
 import { ElButton, ElInput, ElDatePicker, ElMessage } from 'element-plus';
 import { Select } from '@element-plus/icons-vue';
 import axios from 'axios';
 import question from '@/components/question.vue';
 import { useRouter } from 'vue-router';
 import request from '@/utils/request.js';
+import { takeAccessToken } from "@/net";
 
 const router = useRouter();
 const surveyData = ref({
@@ -18,7 +19,17 @@ const surveyData = ref({
   modified: false,
   questions: [],
 });
+const dateRange = ref([])
 
+// 监听dateRange的变化，将值赋给surveyData的start_time和end_time
+watch(dateRange, (newVal) => {
+  if (newVal.length === 2) {
+    surveyData.value.start_time = newVal[0];
+    surveyData.value.end_time = newVal[1];
+  }
+});
+
+// 修改添加问题函数中的type值
 const addQuestion = (type) => {
   const newQuestion = {
     type,
@@ -29,7 +40,7 @@ const addQuestion = (type) => {
     isEditing: false,
   };
 
-  if (type === 'multiple-choice' || type === 'dropdown-single' || type === 'dropdown-multiple' || type === 'single-choice') {
+  if (type === 1 || type === 2 || type === 4 || type === 5) {
     newQuestion.options.push({ text: '', line_num: 1 });
     newQuestion.options.push({ text: '', line_num: 2 });
   }
@@ -40,6 +51,7 @@ const addQuestion = (type) => {
 const updateQuestion = (index, updatedQuestion) => {
   surveyData.value.questions[index] = updatedQuestion;
   console.log(surveyData.value);
+  console.log(value2)
 };
 
 const deleteQuestion = (index) => {
@@ -76,7 +88,7 @@ const validateSurvey = () => {
       return false;
     }
 
-    if (['multiple-choice', 'dropdown-single', 'dropdown-multiple', 'single-choice'].includes(question.type) && question.options.length === 0) {
+    if ([1, 2, 4, 5].includes(question.type) && question.options.length === 0) {
       ElMessage({
         message: '问题至少得有一个选项',
         type: 'warning',
@@ -94,23 +106,67 @@ const submitSurvey = async () => {
     return;
   }
 
+  // console.log("创建问卷")
+  // console.log(surveyData.value)
+  // try {
+  //   const surveyResponse = await request.post('/survey/createSurvey', {
+  //     title: surveyData.value.title,
+  //     description: surveyData.value.description,
+  //     start_time: surveyData.value.start_time,
+  //     end_time: surveyData.value.end_time,
+  //     status: surveyData.value.status,
+  //     owner_id: surveyData.value.owner_id,
+  //     modified: surveyData.value.modified,
+  //   }, {
+  //     headers: {
+  //       'Authorization': `Bearer ${takeAccessToken()}`,
+  //       'Content-Type': 'application/json'
+  //     }
+  //   });
+  //   console.log(surveyResponse);
+  // } catch (error) {
+  //   console.error('Error creating survey:', error);
+  //   if (error.response) {
+  //     // The request was made and the server responded with a status code
+  //     // that falls out of the range of 2xx
+  //     console.error('Response data:', error.response.data);
+  //     console.error('Response status:', error.response.status);
+  //     console.error('Response headers:', error.response.headers);
+  //   } else if (error.request) {
+  //     // The request was made but no response was received
+  //     console.error('Request data:', error.request);
+  //   } else {
+  //     // Something happened in setting up the request that triggered an Error
+  //     console.error('Error message:', error.message);
+  //   }
+  //   ElMessage.error('发布问卷时出错，请重试');
+  // }
+
+
   try {
+    console.log("创建问卷")
+    console.log(surveyData.value)
     // 创建问卷
-    const surveyResponse = await axios.post('/survey/createSurvey', {
+    const surveyResponse = await request.post('/survey/createSurvey', {
       title: surveyData.value.title,
       description: surveyData.value.description,
-      start_time: surveyData.value.start_time,
-      end_time: surveyData.value.end_time,
+      startTime: surveyData.value.start_time,
+      endTime: surveyData.value.end_time,
       status: surveyData.value.status,
       owner_id: surveyData.value.owner_id,
       modified: surveyData.value.modified,
-    });
+    },{headers: {
+        'Authorization': `Bearer ${takeAccessToken()}`,
+        'Content-Type': 'application/json'
+      }});
+      console.log(surveyResponse);
 
     const surveyId = surveyResponse.data.id;
+    console.log(surveyId)
 
     // 构建问题列表
     const questions = surveyData.value.questions.map((question, index) => ({
-      survey_id: surveyId,
+      surveyId: surveyId,
       type: question.type,
       title: question.title,
       line_num: index + 1,
@@ -118,12 +174,18 @@ const submitSurvey = async () => {
     }));
 
     // 创建问题
-    const questionResponse = await axios.post('/question/createQuestions', {
+    const questionResponse = await request.post('/question/createQuestions',
       questions
-    });
+    ,{headers: {
+        'Authorization': `Bearer ${takeAccessToken()}`,
+        'Content-Type': 'application/json'
+      }});
+
+    console.log(questionResponse)
 
     // 获取创建的问题ID
-    const createdQuestions = questionResponse.data;
+    const createdQuestions = questionResponse.data.ids;
+    console.log(createdQuestions)
 
     // 构建选项列表
     const options = [];
@@ -140,10 +202,18 @@ const submitSurvey = async () => {
 
     // 创建选项
     if (options.length > 0) {
-      await axios.post('/option/addOptions', {
+      
+      const optionResponse = await request.post('/option/addOptions', 
         options
-      });
+      ,{headers: {
+        'Authorization': `Bearer ${takeAccessToken()}`,
+        'Content-Type': 'application/json'
+      }});
+      console.log("你好")
+      console.log(optionResponse.data)
     }
+    
+    
 
     ElMessage({
       message: '问卷发布成功！',
@@ -191,12 +261,12 @@ const saveDescription = () => {
     <!-- 题目选择 -->
     <el-aside width="20%">
       <div class="left-panel">
-        <el-button type="primary" @click="addQuestion('single-choice')">单选</el-button>
-        <el-button type="primary" @click="addQuestion('multiple-choice')">多选</el-button>
-        <el-button type="primary" @click="addQuestion('dropdown-single')">下拉单选</el-button>
-        <el-button type="primary" @click="addQuestion('dropdown-multiple')">下拉多选</el-button>
-        <el-button type="primary" @click="addQuestion('short-answer')">简答</el-button>
-        <el-button type="primary" @click="addQuestion('document')">文件上传</el-button>
+        <el-button type="primary" @click="addQuestion(1)">单选</el-button>
+        <el-button type="primary" @click="addQuestion(2)">多选</el-button>
+        <el-button type="primary" @click="addQuestion(4)">下拉单选</el-button>
+        <el-button type="primary" @click="addQuestion(5)">下拉多选</el-button>
+        <el-button type="primary" @click="addQuestion(3)">简答</el-button>
+        <el-button type="primary" @click="addQuestion(6)">文件上传</el-button>
       </div>
     </el-aside>
     <!-- 问卷内容 -->
@@ -249,10 +319,17 @@ const saveDescription = () => {
 
         <template #footer>
           <div class="questionnaire-footer">
-            <div>
-              <span>截止时间：</span>
-              <el-date-picker v-model="surveyData.end_time" type="datetime" placeholder="选择问卷截止时间" />
-            </div>
+            <div class="block">
+      <el-date-picker
+        v-model="dateRange"
+        type="datetimerange"
+        start-placeholder="Start date"
+        end-placeholder="End date"
+        format="YYYY-MM-DD HH:mm:ss"
+        date-format="YYYY/MM/DD ddd"
+        time-format="A hh:mm:ss"
+      />
+    </div>
             <el-button type="primary" @click="submitSurvey">发布问卷</el-button>
           </div>
         </template>

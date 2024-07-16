@@ -2,11 +2,12 @@
 
 import { get, getImage } from "@/net";
 import { ref, reactive } from "vue";
-import router from "@/router";
 import { useStore } from "@/store";
-import { Location, Memo, Setting } from "@element-plus/icons-vue";
+import { Close, Location, Memo, Setting } from "@element-plus/icons-vue";
+import { useRouter } from "vue-router";
 
 const store = useStore()
+const router = useRouter()
 const loading = ref(true)
 
 const user = reactive({
@@ -30,6 +31,10 @@ get("/api/user/userInfo", (data) => {
         //console.log(user.avatar)
     })
 });
+
+const userLogout = () => {
+    store.logout(router)
+}
 
 </script>
 
@@ -73,12 +78,16 @@ get("/api/user/userInfo", (data) => {
                                 基本资料
                             </template>
                         </el-menu-item>
-                        <!-- <el-menu-item index="/user/user-setting">
-                            <template #title>
-                                <el-button type="text" @click="userLogout">退出登录</el-button>
-                            </template>
-                        </el-menu-item> -->
                     </el-sub-menu>
+                    <el-divider></el-divider>
+                    <el-menu-item>
+                        <el-icon>
+                            <Close />
+                        </el-icon>
+                        <template #title>
+                            <el-button type="text" @click="userLogout">退出登录</el-button>
+                        </template>
+                    </el-menu-item>
 
                 </el-menu>
             </el-aside>

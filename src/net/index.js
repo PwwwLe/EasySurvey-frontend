@@ -172,12 +172,14 @@ function login(username, password, role, success, failure = defaultFailure) {
     }).catch(err => failure(err))
 }
 
-function Register(username, password, success, failure = defaultFailure) {
-    console.log(username)
-    console.log(password)
+function Register(username, password, code, uuid, success, failure = defaultFailure) {
+    // console.log(username)
+    // console.log(password)
     axios.post('api/register', {
         username: username,
         password: password,
+        code: code,
+        uuid: uuid
     }, {
         headers: {
             'Content-Type': 'application/json'
@@ -188,8 +190,7 @@ function Register(username, password, success, failure = defaultFailure) {
             ElMessage.success('注册成功，欢迎加入我们')
             console.warn(`注册成功，欢迎加入我们`)
             success(data.data)
-        }
-        else {
+        } else {
             defaultFailure(data.msg, data.code, 'api/register')
             //console.warn(`请求地址: /register, 状态码: ${data.code}, 错误消息: ${data.msg}`)
         }
@@ -368,14 +369,15 @@ function getSurvey(surveyId, success, failure = defaultFailure) {
 }
 
 /**
- * 
+ *
  * 获取请求头
  */
 function accessHeader() {
     if (takeAccessToken())
         return {
             //'Authorization': `Bearer ${takeAccessToken()}`
-            'Authorization': `Bearer ${takeAccessToken()}`
+            'Authorization': `Bearer ${takeAccessToken()}`,
+            'Content-Type': 'application/json'
         }
     else return {};
 }
@@ -415,4 +417,4 @@ function del(url, success, failure = defaultFailure) { // delete is a reserved w
 function unauthorized() {
     return !takeAccessToken();
 }
-export { login, get, post, put, patch, del, unauthorized, accessHeader, Register, UploadImage, getImage, getInfo, getByUserId, getSurvey }
+export { login, get, post, put, patch, del, unauthorized, accessHeader, Register, UploadImage, getImage, getInfo, getByUserId, getSurvey, takeAccessToken }

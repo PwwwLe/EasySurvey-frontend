@@ -54,21 +54,21 @@ const handleRemind = () => {
     <div class="card-main">
       <div class="main-left">
         <div style="margin-right: 5px">
-          <el-button class="custom-button" key="编辑" type="plain" text @click="handleEdit">
+          <el-button class="custom-button" key="编辑" plain text @click="handleEdit">
             <el-icon>
               <Edit />
             </el-icon> 编辑问卷
           </el-button>
         </div>
         <div style="margin-right: 5px">
-          <el-button class="custom-button" key="转发" type="plain" text @click="handleShare">
+          <el-button class="custom-button" key="转发" plain text @click="handleShare">
             <el-icon>
               <Share />
             </el-icon> 转发问卷
           </el-button>
         </div>
         <div style="margin-right: 5px">
-          <el-button class="custom-button" key="分析" type="plain" text @click="handleDownload">
+          <el-button class="custom-button" key="分析" plain text @click="handleDownload">
             <el-icon>
               <Download />
             </el-icon> 分析&下载
@@ -77,14 +77,14 @@ const handleRemind = () => {
       </div>
       <div class="main-right">
         <div style="margin-right: 5px">
-          <el-button class="custom-button" key="删除" type="plain" text @click="handleDelete">
+          <el-button class="custom-button" key="删除" type="danger" text @click="handleDelete">
             <el-icon>
               <Delete />
             </el-icon> 删除
           </el-button>
         </div>
         <div style="margin-right: 5px">
-          <el-button class="custom-button" key="提醒" type="plain" text @click="handleRemind">
+          <el-button class="custom-button" key="提醒" type="primary" text @click="handleRemind">
             <el-icon>
               <Bell />
             </el-icon> 提醒
