@@ -25,7 +25,7 @@ function getIndustryNames(industryArray) {
 
 // 获取用户基本信息
 get('/api/user/userInfo', data => {
-    console.log(data)
+    //console.log(data)
     user.avatar = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
     user.name = data.user.name || '未编写';
     user.president = data.user.president || '未编写';
@@ -43,9 +43,9 @@ function getBasicInfo() {
     get("/api/user/userInfo", (data) => {
         console.log(data)
         getImage(data.user.avatar, (data) => {
-            console.log(data)
+            //console.log(data)
             user.avatar = 'data:image/png;base64,' + data.data.data
-            console.log(user.avatar)
+            //console.log(user.avatar)
         })
     });
 }
@@ -57,9 +57,6 @@ function ToChangeBasicInfo() {
 </script>
 
 <template>
-    basicInfo
-    <button type="text" @click="getBasicInfo">拉取用户基本信息</button>
-
     <el-card class="user-info-card">
         <div class="avatar-container">
             <el-avatar :src="user.avatar" size="large"></el-avatar>

@@ -6,6 +6,7 @@ import {Search, Plus} from '@element-plus/icons-vue'
 import questionnaire from '@/components/questionnaire.vue'
 import request from '@/utils/request'
 import {ElMessage, ElMessageBox} from 'element-plus'
+import axios from "axios";
 
 const router = useRouter()
 const searchContent = ref('')
@@ -74,9 +75,90 @@ const handleEdit = (id) => {
   router.push({ name: 'editQuestionnaire', params: { questionnaireId:id } });
 }
 
+const shareDrawerVisible = ref(false)
+const shareLink = ref('')
+const qrCode = ref('')
+const currentQuestionnaire = ref(null);
+
 const handleShare = (questionnaire) => {
   console.log('Share:', questionnaire)
+  currentQuestionnaire.value = questionnaire
   // todo 转发问卷逻辑
+  shareDrawerVisible.value = true
+}
+
+const generateQrCode = async () => {
+  try {
+    const response = await axios.get('/api/qr/generate', {
+      headers: {
+        ...accessHeader()
+      },
+      params: {
+        content: shareLink.value
+      }
+    })
+    qrCode.value = `data:image/png;base64,${response.data.data}`
+  } catch (error) {
+    console.error('生成二维码失败:', error)
+    ElMessage.error('生成二维码失败')
+  }
+}
+
+const copyLink = () => {
+  navigator.clipboard.writeText(shareLink.value).then(() => {
+    ElMessage.success('链接已复制到剪贴板')
+  }).catch(err => {
+    console.error('复制链接失败:', err)
+    ElMessage.error('复制链接失败')
+  })
+}
+
+const openLink = () => {
+  window.open(shareLink.value, '_blank')
+}
+
+// todo 更改行业信息
+const industries = ref([
+  {value: 1, label: 'IT'},
+  {value: 2, label: 'Finance'},
+  {value: 3, label: 'Healthcare'},
+]);
+
+const selectedIndustries = ref([]);
+const checkAll = ref(false);
+const indeterminate = ref(false);
+
+const handleCheckAll = () => {
+  if (checkAll.value) {
+    selectedIndustries.value = industries.value.map(item => item.value);
+  } else {
+    selectedIndustries.value = [];
+  }
+  indeterminate.value = false;
+};
+const handleDistribute = async () => {
+  try {
+    if (!currentQuestionnaire.value) {
+      ElMessage.error('未选中行业')
+    }
+    const response = await request.post('/publish/send', null, {
+      headers: {
+        ...accessHeader()
+      },
+      params: {
+        id: currentQuestionnaire.value.id,
+        industries: selectedIndustries.value
+      }
+    })
+    console.log(response)
+    if (response.status === 200) {
+      ElMessage.success('问卷分发成功!')
+    } else {
+      ElMessage.error('问卷分发失败!')
+    }
+  } catch (error) {
+    console.error('分发失败: ', error);
+  }
 }
 
 const handleDownload = (questionnaire) => {
@@ -188,6 +270,61 @@ const searchQuestionnaires = () => {
       ></questionnaire>
       <!-- <el-empty v-if="!hasMoreData && questionnaires.length === 0" description="没有更多问卷"></el-empty> -->
     </div>
+
+    <el-drawer v-model="shareDrawerVisible" title="转发问卷" size="30%" :direction="'rtl'" :with-header="true">
+      <template #header>
+        <h1>转发问卷</h1>
+      </template>
+      <template #default>
+        <el-divider content-position="center"> 二维码分享</el-divider>
+        <!-- todo 二维码  -->
+        <div style="text-align: center;">
+          <img v-if="qrCode" :src="qrCode" alt="QR Code" style="max-width: 100%; height: auto;">
+        </div>
+
+        <el-divider content-position="center"> 链接分享</el-divider>
+        <!-- todo 链接  -->
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <el-input v-model="shareLink" readonly placeholder="分享链接" style="flex: 1;"></el-input>
+          <el-button @click="copyLink" type="primary">复制</el-button>
+          <el-button @click="openLink" type="success">跳转</el-button>
+        </div>
+        <el-divider content-position="center"> 选择发布的行业</el-divider>
+        <div style="text-align: center">
+          <el-select
+              v-model="selectedIndustries"
+              multiple
+              clearable
+              collapse-tags
+              placeholder="选择"
+              popper-class="custom-header"
+              :max-collapse-tags="1"
+              style="width: 240px"
+          >
+            <template #header>
+              <el-checkbox
+                  v-model="checkAll"
+                  :indeterminate="indeterminate"
+                  @change="handleCheckAll"
+              >
+                选择全部
+              </el-checkbox>
+            </template>
+            <el-option
+                v-for="item in industries"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+            />
+          </el-select>
+          <el-button type="primary" @click="handleDistribute">分发问卷</el-button>
+        </div>
+
+      </template>
+      <template #footer>
+      </template>
+    </el-drawer>
+
   </div>
 </template>
 
