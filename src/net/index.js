@@ -38,10 +38,10 @@ function internalPost(url, queryParams, data, header, success, failure, error = 
 }
 
 function internalGet(url, header, success, failure, error = defaultError) {
-    console.log(url)
-    console.log(header)
+    //console.log(url)
+    //console.log(header)
     axios.get(url, { headers: header }).then(({ data }) => {
-        console.log(data)
+        //console.log(data)
         if (data.code === 1) {
             success(data.data)
         } else {
@@ -264,7 +264,7 @@ function updateAvatar(avatarUrl, failure = defaultFailure) {
 }
 
 function getImage(avatarUrl, success, failure = defaultError) {
-    console.log(avatarUrl)
+    //console.log(avatarUrl)
     if (avatarUrl == null)
         return
     const queryParams = {
@@ -282,7 +282,7 @@ function getImage(avatarUrl, success, failure = defaultError) {
 
     axios.get(fullUrl, config)
         .then(({ data }) => {
-            console.log(data);
+            //console.log(data);
             if (data.code === 1) {
                 success(data)
             } else {
@@ -310,6 +310,58 @@ function getInfo(success, failure = defaultFailure) {
                 success(data);
             } else {
                 failure(data.msg, data.code, fullUrl);
+            }
+        })
+        .catch(err => failure(err));
+}
+
+function getByUserId(userId, success, failure = defaultFailure) {
+    const queryParams = {
+        userId: userId
+    }
+    const url = '/api/publish/getByUserId'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`
+        }
+    };
+
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl)
+            }
+        })
+        .catch(err => failure(err));
+}
+
+function getSurvey(surveyId, success, failure = defaultFailure) {
+    const queryParams = {
+        surveyId: surveyId
+    }
+    const url = '/api/option/getAllOptionsStructureBySurveyId'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`
+        }
+    };
+
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            //console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl)
             }
         })
         .catch(err => failure(err));
@@ -363,4 +415,4 @@ function del(url, success, failure = defaultFailure) { // delete is a reserved w
 function unauthorized() {
     return !takeAccessToken();
 }
-export { login, get, post, put, patch, del, unauthorized, accessHeader, Register, UploadImage, getImage, getInfo }
+export { login, get, post, put, patch, del, unauthorized, accessHeader, Register, UploadImage, getImage, getInfo, getByUserId, getSurvey }

@@ -23,11 +23,11 @@ const user = reactive({
 // }
 
 get("/api/user/userInfo", (data) => {
-    console.log(data)
+    //console.log(data)
     getImage(data.user.avatar, (data) => {
-        console.log(data)
+        //console.log(data)
         user.avatar = 'data:image/png;base64,' + data.data.data
-        console.log(user.avatar)
+        //console.log(user.avatar)
     })
 });
 
