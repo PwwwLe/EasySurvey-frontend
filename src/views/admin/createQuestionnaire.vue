@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick } from 'vue';
+import { ref, nextTick,watch  } from 'vue';
 import { ElButton, ElInput, ElDatePicker, ElMessage } from 'element-plus';
 import { Select } from '@element-plus/icons-vue';
 import axios from 'axios';
@@ -18,6 +18,15 @@ const surveyData = ref({
   owner_id: null,
   modified: false,
   questions: [],
+});
+const dateRange = ref([])
+
+// 监听dateRange的变化，将值赋给surveyData的start_time和end_time
+watch(dateRange, (newVal) => {
+  if (newVal.length === 2) {
+    surveyData.value.start_time = newVal[0];
+    surveyData.value.end_time = newVal[1];
+  }
 });
 
 // 修改添加问题函数中的type值
@@ -42,6 +51,7 @@ const addQuestion = (type) => {
 const updateQuestion = (index, updatedQuestion) => {
   surveyData.value.questions[index] = updatedQuestion;
   console.log(surveyData.value);
+  console.log(value2)
 };
 
 const deleteQuestion = (index) => {
@@ -140,8 +150,8 @@ const submitSurvey = async () => {
     const surveyResponse = await request.post('/survey/createSurvey', {
       title: surveyData.value.title,
       description: surveyData.value.description,
-      start_time: surveyData.value.start_time,
-      end_time: surveyData.value.end_time,
+      startTime: surveyData.value.start_time,
+      endTime: surveyData.value.end_time,
       status: surveyData.value.status,
       owner_id: surveyData.value.owner_id,
       modified: surveyData.value.modified,
@@ -309,10 +319,17 @@ const saveDescription = () => {
 
         <template #footer>
           <div class="questionnaire-footer">
-            <div>
-              <span>截止时间：</span>
-              <el-date-picker v-model="surveyData.end_time" type="datetime" placeholder="选择问卷截止时间" />
-            </div>
+            <div class="block">
+      <el-date-picker
+        v-model="dateRange"
+        type="datetimerange"
+        start-placeholder="Start date"
+        end-placeholder="End date"
+        format="YYYY-MM-DD HH:mm:ss"
+        date-format="YYYY/MM/DD ddd"
+        time-format="A hh:mm:ss"
+      />
+    </div>
             <el-button type="primary" @click="submitSurvey">发布问卷</el-button>
           </div>
         </template>
