@@ -6,6 +6,7 @@ import {Search, Plus} from '@element-plus/icons-vue'
 import questionnaire from '@/components/questionnaire.vue'
 import request from '@/utils/request'
 import {ElMessage, ElMessageBox} from 'element-plus'
+import axios from "axios";
 
 const router = useRouter()
 const searchContent = ref('')
@@ -69,11 +70,43 @@ const handleEdit = (questionnaire) => {
 }
 
 const shareDrawerVisible = ref(false)
+const shareLink = ref('')
+const qrCode = ref('')
 
 const handleShare = (questionnaire) => {
   console.log('Share:', questionnaire)
   // todo 转发问卷逻辑
   shareDrawerVisible.value = true
+}
+
+const generateQrCode = async () => {
+  try {
+    const response = await axios.get('/api/qr/generate', {
+      headers: {
+        ...accessHeader()
+      },
+      params: {
+        content: shareLink.value
+      }
+    })
+    qrCode.value = `data:image/png;base64,${response.data.data}`
+  } catch (error) {
+    console.error('生成二维码失败:', error)
+    ElMessage.error('生成二维码失败')
+  }
+}
+
+const copyLink = () => {
+  navigator.clipboard.writeText(shareLink.value).then(() => {
+    ElMessage.success('链接已复制到剪贴板')
+  }).catch(err => {
+    console.error('复制链接失败:', err)
+    ElMessage.error('复制链接失败')
+  })
+}
+
+const openLink = () => {
+  window.open(shareLink.value, '_blank')
 }
 
 const handleDownload = (questionnaire) => {
@@ -186,11 +219,19 @@ const handleScroll = async (event) => {
         <h1>转发问卷</h1>
       </template>
       <template #default>
-        <el-divider content-position="center"> 二维码分享 </el-divider>
+        <el-divider content-position="center"> 二维码分享</el-divider>
         <!-- todo 二维码  -->
+        <div style="text-align: center;">
+          <img v-if="qrCode" :src="qrCode" alt="QR Code" style="max-width: 100%; height: auto;">
+        </div>
 
-        <el-divider content-position="center"> 链接分享 </el-divider>
+        <el-divider content-position="center"> 链接分享</el-divider>
         <!-- todo 链接  -->
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <el-input v-model="shareLink" readonly placeholder="分享链接" style="flex: 1;"></el-input>
+          <el-button @click="copyLink" type="primary">复制</el-button>
+          <el-button @click="openLink" type="success">跳转</el-button>
+        </div>
 
       </template>
       <template #footer>
