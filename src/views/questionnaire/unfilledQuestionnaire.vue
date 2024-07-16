@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 
 </script>
 
@@ -6,15 +6,15 @@
     unfilledQuestionnaire
 </template>
 
-<style scoped></style>
+<style scoped></style> -->
 
-<!-- <script setup>
+<script setup>
 import { useStore } from "@/store";
 import { computed, ref } from "vue";
 import Card from "@/components/Card.vue";
 import { Avatar } from "@element-plus/icons-vue";
 import QuestionnaireItem from "@/components/QuestionnaireItem.vue";
-import { get, post } from "@/net";
+import { get, post, getByUserId, getSurvey } from "@/net";
 import { format } from "date-fns";
 import { useRouter } from 'vue-router';
 import { ElMessage } from "element-plus";
@@ -30,18 +30,28 @@ const isWriting = ref(false); //开始填写问卷?
 
 const mySubmittedQuestionnaireList = ref([]);
 
-
-get(`api/answer/getMyAnswerList`, data => {
-    mySubmittedQuestionnaireList.value = data;
-    console.log(mySubmittedQuestionnaireList.value);
+get("/api/user/userInfo", (data) => {
+    console.log(data)
+    getByUserId('25', (data) => {
+        //getByUserId(data.user.id, (data) => {
+        console.log(data)
+        questionnaireList.value = data.data;
+        console.log(questionnaireList)
+    })
 });
 
-//拉取当前已激活的问卷列表
-get('api/questionnaire/activeQuestionnaireList', data => {
-    const isWriting = false; //开始填写问卷?
-    questionnaireList.value = data;
-    console.log(questionnaireList);
-});
+
+// get(`api/answer/getMyAnswerList`, data => {
+//     mySubmittedQuestionnaireList.value = data;
+//     console.log(mySubmittedQuestionnaireList.value);
+// });
+
+// //拉取当前已激活的问卷列表
+// get('api/questionnaire/activeQuestionnaireList', data => {
+//     const isWriting = false; //开始填写问卷?
+//     questionnaireList.value = data;
+//     console.log(questionnaireList);
+// });
 
 const dateFormatter = (dateString) => {
     return new Date(dateString).toLocaleDateString("zh-CN");
@@ -56,15 +66,21 @@ const findSubmitted = (id) => {
 
 const startWrite = async (item) => {
 
+    console.log(item)
     isWriting.value = true;
-    currentQuestionnaire.value = item;
-    console.log(currentQuestionnaire)
 
-    // 获取问卷详情信息
-    await get(`api/questionnaire/questionnaireDetails/${item.id}`, data => {
-        currentQuestionnaireDetails.value = data;
-        console.log(data);
-    });
+    //getSurvey(item.id, (data) => {
+    getSurvey(12, (data) => {
+        console.log(data)
+    })
+    // currentQuestionnaire.value = item;
+    // console.log(currentQuestionnaire)
+
+    // // 获取问卷详情信息
+    // await get(`api/questionnaire/questionnaireDetails/${item.id}`, data => {
+    //     currentQuestionnaireDetails.value = data;
+    //     console.log(data);
+    // });
 }
 
 const answers = ref([]);//表单结果
@@ -138,9 +154,9 @@ const submitQuestionnaire = () => {
         <div class="settings-left">
             <card title="未填写的问卷" :icon="Avatar" desc="在这里查看您还未填写的问卷调查" v-if="!isWriting">
                 <div style="display: flex; flex-wrap: wrap">
-                    
+
                     <div v-for="(item, index) in questionnaireList" :key="index" class="questionnaire-wrapper">
-                        <QuestionnaireItem :key="item.id" :title="item.name" :desc="item.desc"
+                        <QuestionnaireItem :key="item.id" :title="item.title" :desc="item.description"
                             :createTime="dateFormatter(item.createTime)">
                             <el-button type="primary" plain @click="startWrite(item)"
                                 v-if="!findSubmitted(item.id)">开始填写</el-button>
@@ -149,7 +165,7 @@ const submitQuestionnaire = () => {
                     </div>
                 </div>
             </card>
-            <card :title="currentQuestionnaire.name" :icon="Avatar" :desc="currentQuestionnaire.desc" v-if="isWriting">
+            <!-- <card :title="currentQuestionnaire.name" :icon="Avatar" :desc="currentQuestionnaire.desc" v-if="isWriting">
                 <template v-if="currentQuestionnaireDetails && currentQuestionnaireDetails.length > 0">
                     <div v-for="(question, index ) in currentQuestionnaireDetails" :key="index">
                         <div>{{ question.desc }}</div>
@@ -160,25 +176,24 @@ const submitQuestionnaire = () => {
                                     :key="optionIndex">{{ option }}</el-radio>
                             </el-radio-group>
                         </template>
-                        <template v-else-if="question.type === 1">
+<template v-else-if="question.type === 1">
                             <el-checkbox-group v-model="question.answer" class="questionnaire-details-item">
                                 <el-checkbox :label="option"
                                     v-for="(option, optionIndex) in question.options.split('&$$&')"
                                     :key="optionIndex">{{ option }}</el-checkbox>
                             </el-checkbox-group>
                         </template>
-                        <template v-else-if="question.type === 2" class="questionnaire-details-item">
+<template v-else-if="question.type === 2" class="questionnaire-details-item">
                             <el-input v-model="question.answer" placeholder="请输入文本"></el-input>
                         </template>
-                    </div>
-                </template>
-                <template else>
+</div>
+</template>
+<template else>
                     <div>暂无题目</div>
                 </template>
-                <el-button type="primary" @click="submitQuestionnaire"
-                    class="questionnaire-details-item">提交问卷</el-button>
-                <el-button type="primary" @click="back" class="questionnaire-details-item">返回</el-button>
-            </card>
+<el-button type="primary" @click="submitQuestionnaire" class="questionnaire-details-item">提交问卷</el-button>
+<el-button type="primary" @click="back" class="questionnaire-details-item">返回</el-button>
+</card> -->
         </div>
     </div>
 
@@ -206,4 +221,4 @@ const submitQuestionnaire = () => {
 .questionnaire-details-item {
     margin: 5px 5px 5px 5px;
 }
-</style> -->
+</style>

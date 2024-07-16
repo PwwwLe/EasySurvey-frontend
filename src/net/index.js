@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {ElMessage} from "element-plus";
+import { ElMessage } from "element-plus";
 
 const authItemName = "access_token"
 
@@ -27,7 +27,7 @@ function internalPost(url, queryParams, data, header, success, failure, error = 
     const fullUrl = `${url}?${queryString}`;
 
     console.log(fullUrl)
-    axios.post(fullUrl, data, {headers: header}).then(({data}) => {
+    axios.post(fullUrl, data, { headers: header }).then(({ data }) => {
         console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -38,10 +38,10 @@ function internalPost(url, queryParams, data, header, success, failure, error = 
 }
 
 function internalGet(url, header, success, failure, error = defaultError) {
-    console.log(url)
-    console.log(header)
-    axios.get(url, {headers: header}).then(({data}) => {
-        console.log(data)
+    //console.log(url)
+    //console.log(header)
+    axios.get(url, { headers: header }).then(({ data }) => {
+        //console.log(data)
         if (data.code === 1) {
             success(data.data)
         } else {
@@ -55,7 +55,7 @@ function internalPut(url, data, header, success, failure, error = defaultError) 
     console.log(data)
     console.log(header)
 
-    axios.put(url, data, {headers: header}).then(({data}) => {
+    axios.put(url, data, { headers: header }).then(({ data }) => {
         console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -96,7 +96,7 @@ function internalPatch(url, queryParams, data, header, success, failure, error =
 
     console.log(fullUrl)
 
-    axios.patch(fullUrl, data, {headers: header}).then(({data}) => {
+    axios.patch(fullUrl, data, { headers: header }).then(({ data }) => {
         console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -111,7 +111,7 @@ function internalDelete(url, header, success, failure, error = defaultError) {
     console.log(url)
     console.log(header)
 
-    axios.delete(url, {headers: header}).then(({data}) => {
+    axios.delete(url, { headers: header }).then(({ data }) => {
         console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -123,7 +123,7 @@ function internalDelete(url, header, success, failure, error = defaultError) {
 
 
 function storeAccessToken(token, expire) {
-    const authObj = {token: token, expire: expire}
+    const authObj = { token: token, expire: expire }
     const str = JSON.stringify(authObj);
     localStorage.setItem(authItemName, str)
     console.log(localStorage.getItem(authItemName))
@@ -155,7 +155,7 @@ function login(username, password, role, success, failure = defaultFailure) {
         headers: {
             'Content-Type': 'application/json'
         }
-    }).then(({data}) => {
+    }).then(({ data }) => {
         console.log(data)
         console.log(role)
 
@@ -212,7 +212,7 @@ function UploadImage(url, queryParams, data, success, failure = defaultFailure) 
         byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], {type: 'image/png'}); // 假设 PNG 图片
+    const blob = new Blob([byteArray], { type: 'image/png' }); // 假设 PNG 图片
 
     const formData = new FormData();
     formData.append('file', blob, 'image.png'); // 附加上述 Blob，使用一个文件名
@@ -227,7 +227,7 @@ function UploadImage(url, queryParams, data, success, failure = defaultFailure) 
 
     // 发送请求
     axios.post(url, formData, config)
-        .then(({data}) => {
+        .then(({ data }) => {
             console.log(data);
             if (data.code === 1) {
                 ElMessage.success('上传成功');
@@ -255,7 +255,7 @@ function updateAvatar(avatarUrl, failure = defaultFailure) {
     };
 
     axios.patch(fullUrl, null, config)
-        .then(({data}) => {
+        .then(({ data }) => {
             console.log(data);
             if (data.code === 1) {
 
@@ -267,7 +267,7 @@ function updateAvatar(avatarUrl, failure = defaultFailure) {
 }
 
 function getImage(avatarUrl, success, failure = defaultError) {
-    console.log(avatarUrl)
+    //console.log(avatarUrl)
     if (avatarUrl == null)
         return
     const queryParams = {
@@ -284,8 +284,8 @@ function getImage(avatarUrl, success, failure = defaultError) {
     };
 
     axios.get(fullUrl, config)
-        .then(({data}) => {
-            console.log(data);
+        .then(({ data }) => {
+            //console.log(data);
             if (data.code === 1) {
                 success(data)
             } else {
@@ -307,7 +307,7 @@ function getInfo(success, failure = defaultFailure) {
     };
 
     axios.get('/api/getInfo', config)
-        .then(({data}) => {
+        .then(({ data }) => {
             console.log(data);
             if (data.code === 200) {
                 success(data);
@@ -318,31 +318,57 @@ function getInfo(success, failure = defaultFailure) {
         .catch(err => failure(err));
 }
 
-// function fetchQuestionnaires(count, failure = defaultFailure) {
-//     const queryParams = {
-//         count: count.value.toString()
-//     }
-//     const url = '/api/survey/getSeveral'
-//     const queryString = new URLSearchParams(queryParams).toString();
-//     const fullUrl = `${url}?${queryString}`
-//     console.log(fullUrl)
-//     const config = {
-//         headers: {
-//             'Authorization': `Bearer ${takeAccessToken()}`
-//         }
-//     };
+function getByUserId(userId, success, failure = defaultFailure) {
+    const queryParams = {
+        userId: userId
+    }
+    const url = '/api/publish/getByUserId'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`
+        }
+    };
 
-//     axios.get(fullUrl, config)
-//         .then(({ data }) => {
-//             //console.log(data);
-//             if (data.code === 1) {
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl)
+            }
+        })
+        .catch(err => failure(err));
+}
 
-//             } else {
-//                 failure(data.msg, data.code, fullUrl);
-//             }
-//         })
-//         .catch(err => failure(err));
-// }
+function getSurvey(surveyId, success, failure = defaultFailure) {
+    const queryParams = {
+        surveyId: surveyId
+    }
+    const url = '/api/option/getAllOptionsStructureBySurveyId'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`
+        }
+    };
+
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            //console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl)
+            }
+        })
+        .catch(err => failure(err));
+}
 
 /**
  *
