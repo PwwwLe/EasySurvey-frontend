@@ -57,9 +57,6 @@ function ToChangeBasicInfo() {
 </script>
 
 <template>
-    basicInfo
-    <button type="text" @click="getBasicInfo">拉取用户基本信息</button>
-
     <el-card class="user-info-card">
         <div class="avatar-container">
             <el-avatar :src="user.avatar" size="large"></el-avatar>
