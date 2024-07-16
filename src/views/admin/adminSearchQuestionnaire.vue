@@ -1,54 +1,51 @@
 <script setup>
-import {ref, reactive, onMounted} from 'vue'
-import {useRouter} from 'vue-router'
-import {accessHeader, takeAccessToken} from "@/net";
-import {Search, Plus} from '@element-plus/icons-vue'
-import questionnaire from '@/components/questionnaire.vue'
-import request from '@/utils/request'
-import {ElMessage, ElMessageBox} from 'element-plus'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter,useRoute } from 'vue-router';
+import { accessHeader, takeAccessToken } from "@/net";
+import { Search, Plus } from '@element-plus/icons-vue';
+import questionnaire from '@/components/questionnaire.vue';
+import request from '@/utils/request';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
-const router = useRouter()
-const searchContent = ref('')
-const questionnaires = reactive([])
-let count = ref(1)
+const router = useRouter();
+const route = useRoute();
+const searchContentnow = ref('');
+const searchQuestionnaires = reactive([]);
 
-const fetchQuestionnaires = async () => {
+const fetchSearchResults = async () => {
   try {
-    console.log("第二次count:"+count.value);
-    const response = await request.get('/survey/getSeveral', {
+    const searchContent = route.params.searchContent;
+    const response = await request.get('/survey/getSurveyByTitle', {
       headers: {
-        ...accessHeader()
+        ...accessHeader(),
       },
       params: {
-        count: count.value.toString()
-      }
+        title: searchContent,
+      },
     });
-
-    console.log("count:" + count.value);
+    console.log(searchContent);
     console.log(response);
-
-    questionnaires.length = 0;
-    const data = response.data.data || [];  // 增加对空值的判断
-    questionnaires.push(...data.map(item => {
+    searchQuestionnaires.length = 0;
+    searchQuestionnaires.push(...response.data.data.map(item => {
       return {
         ...item,
         startTime: item.startTime ? formatDateTime(item.startTime) : item.startTime,
         endTime: item.endTime ? formatDateTime(item.endTime) : item.endTime,
-      }
+      };
     }));
   } catch (error) {
-    console.error('Error fetching questionnaires:', error);
+    console.error('Error searching questionnaires:', error);
     ElMessage({
       type: 'error',
-      message: '获取问卷时出错，请重试'
+      message: '搜索问卷时出错，请重试',
     });
   }
 };
 
 onMounted(() => {
-  // count = 1;
-  fetchQuestionnaires()
-})
+  fetchSearchResults();
+  console.log("参数是："+route.params.searchContent);
+});
 
 const formatDateTime = (time) => {
   const options = {
@@ -59,90 +56,71 @@ const formatDateTime = (time) => {
     minute: '2-digit',
     second: '2-digit',
     hour12: false,
-    timeZone: 'UTC'
+    timeZone: 'UTC',
   };
   return new Intl.DateTimeFormat('zh-CN', options).format(new Date(time));
-}
+};
 
-const navigateToCreateQuestionnaire = () => {
-  router.push('/createQuestionnaire')
-}
-
-//编辑逻辑
-const handleEdit = (id) => {
-  console.log('Edit:', id)
-  router.push({ name: 'editQuestionnaire', params: { questionnaireId:id } });
-}
+const handleEdit = (questionnaire) => {
+  console.log('Edit:', questionnaire);
+  // todo 编辑问卷逻辑
+};
 
 const handleShare = (questionnaire) => {
-  console.log('Share:', questionnaire)
+  console.log('Share:', questionnaire);
   // todo 转发问卷逻辑
-}
+};
 
 const handleDownload = (questionnaire) => {
-  console.log('Download:', questionnaire)
+  console.log('Download:', questionnaire);
   // todo 分析&下载问卷逻辑
-}
+};
 
 const handleDelete = async (questionnaire) => {
   try {
     await ElMessageBox.confirm(
-        `确定要删除问卷 "${questionnaire.title}" 吗？`,
-        '删除问卷',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning',
-        }
-    )
+      `确定要删除问卷 "${questionnaire.title}" 吗？`,
+      '删除问卷',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    );
 
     const config = {
       headers: {
-        'Authorization': `Bearer ${takeAccessToken()}`
+        'Authorization': `Bearer ${takeAccessToken()}`,
       },
       params: {
         id: questionnaire.id,
-      }
+      },
     };
 
-    const response = await request.delete(`/survey/deleteSurvey`, config) // 修改为实际接口
-    console.log(response)
-    const index = questionnaires.findIndex(q => q.id === questionnaire.id)
+    const response = await request.delete('/survey/deleteSurvey', config);
+    console.log(response);
+    const index = searchQuestionnaires.findIndex(q => q.id === questionnaire.id);
     if (index !== -1) {
-      questionnaires.splice(index, 1)
+      searchQuestionnaires.splice(index, 1);
     }
 
     ElMessage({
       type: 'success',
       message: '问卷删除成功!',
-    })
+    });
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage({
         type: 'error',
         message: '删除问卷时出错，请重试',
-      })
+      });
     }
   }
-}
+};
 
 const handleRemind = (questionnaire) => {
-  console.log('Remind:', questionnaire)
+  console.log('Remind:', questionnaire);
   // todo 提醒问卷逻辑
-}
-
-const handleScroll = async (event) => {
-  const {scrollTop, clientHeight, scrollHeight} = event.target
-
-  if (scrollTop + clientHeight >= scrollHeight - 10) {
-    count.value++
-    console.log("count为：" + count.value)
-    await fetchQuestionnaires()
-  }
-}
-
-const searchQuestionnaires = () => {
-  router.push({ name: 'adminSearchQuestionnaire', params: { searchContent: searchContent.value } });
 };
 </script>
 
@@ -161,7 +139,7 @@ const searchQuestionnaires = () => {
       </div>
       <div>
         <el-input
-            v-model="searchContent"
+            v-model="searchContentnow"
             style="max-width: 600px"
             placeholder="请输入问卷标题"
             class="input-with-select"
@@ -176,10 +154,10 @@ const searchQuestionnaires = () => {
 
     <div class="main" @scroll="handleScroll" ref="scrollContainer">
       <questionnaire
-          v-for="item in questionnaires"
+          v-for="item in searchQuestionnaires"
           :key="item.id"
           :questionnaire="item"
-          @edit="handleEdit(item.id)"
+          @edit="handleEdit"
           @share="handleShare"
           @download="handleDownload"
           @delete="handleDelete"
@@ -199,7 +177,7 @@ const searchQuestionnaires = () => {
 
   .header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     height: 50px;
 

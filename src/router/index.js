@@ -94,6 +94,16 @@ const router = createRouter({
             path:"/createQuestionnaire",
             name: "createQuestionnaire",
             component: () => import('@/views/admin/createQuestionnaire.vue')
+        },
+        {
+            path:"/adminSearchQuestionnaire/:searchContent",
+            name: "adminSearchQuestionnaire",
+            component: () => import('@/views/admin/adminSearchQuestionnaire.vue')
+        },
+        {
+            path:"/editQuestionnaire/:questionnaireId",
+            name: "editQuestionnaire",
+            component: () => import('@/views/admin/editQuestionnaire.vue')
         }
     ]
 })

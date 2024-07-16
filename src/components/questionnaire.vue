@@ -45,8 +45,8 @@ const handleRemind = () => {
           </div>
           
           <div class="time">
-            <span>创建时间:{{ questionnaire.start_time }}</span>
-            <span>截止时间:{{ questionnaire.end_time }}</span>
+            <span style="margin-bottom: 2px;">创建时间: {{ questionnaire.startTime }}</span>
+            <span>截止时间: {{ questionnaire.endTime }}</span>
           </div>
         </div>
       </div>

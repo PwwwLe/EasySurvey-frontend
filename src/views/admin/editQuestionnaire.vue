@@ -1,14 +1,15 @@
 <script setup>
-import { ref, nextTick,watch  } from 'vue';
+import { ref, nextTick,watch, onMounted  } from 'vue';
 import { ElButton, ElInput, ElDatePicker, ElMessage } from 'element-plus';
 import { Select } from '@element-plus/icons-vue';
 import axios from 'axios';
 import question from '@/components/question.vue';
-import { useRouter } from 'vue-router';
+import { useRouter,useRoute } from 'vue-router';
 import request from '@/utils/request.js';
 import { takeAccessToken } from "@/net";
 
 const router = useRouter();
+const route = useRoute();
 const surveyData = ref({
   title: '',
   description: '',
@@ -20,6 +21,41 @@ const surveyData = ref({
   questions: [],
 });
 const dateRange = ref([])
+
+const loadSurvey = async (surveyId) => {
+  try {
+    const response = await request.get('/option/getAllOptionsStructureBySurveyId', {
+      headers: {
+        'Authorization': `Bearer ${takeAccessToken()}`,
+      },
+      params: {
+        surveyId: surveyId,
+      }
+    });
+    const survey = response.data.data;
+    console.log(survey)
+
+    surveyData.value.title = survey.title;
+    surveyData.value.description = survey.description;
+    surveyData.value.start_time = new Date(survey.start_time);
+    surveyData.value.end_time = new Date(survey.end_time);
+    dateRange.value = [new Date(survey.start_time), new Date(survey.end_time)];
+    surveyData.value.questions = survey.questions.map((question, index) => ({
+      ...question,
+      isEditing: false,
+    }));
+  } catch (error) {
+    ElMessage.error('加载问卷内容时出错，请重试');
+  }
+};
+
+onMounted(() => {
+  const surveyId = route.params.questionnaireId;
+  console.log(surveyId)
+  if (surveyId) {
+    loadSurvey(surveyId);
+  }
+});
 
 // 监听dateRange的变化，将值赋给surveyData的start_time和end_time
 watch(dateRange, (newVal) => {
@@ -51,6 +87,7 @@ const addQuestion = (type) => {
 const updateQuestion = (index, updatedQuestion) => {
   surveyData.value.questions[index] = updatedQuestion;
   console.log(surveyData.value);
+  console.log(value2)
 };
 
 const deleteQuestion = (index) => {
@@ -106,9 +143,8 @@ const submitSurvey = async () => {
   }
 
   try {
-    console.log("创建问卷");
-    console.log(surveyData.value);
-
+    console.log("创建问卷")
+    console.log(surveyData.value)
     // 创建问卷
     const surveyResponse = await request.post('/survey/createSurvey', {
       title: surveyData.value.title,
@@ -118,16 +154,14 @@ const submitSurvey = async () => {
       status: surveyData.value.status,
       owner_id: surveyData.value.owner_id,
       modified: surveyData.value.modified,
-    }, {
-      headers: {
+    },{headers: {
         'Authorization': `Bearer ${takeAccessToken()}`,
         'Content-Type': 'application/json'
-      }
-    });
-    console.log(surveyResponse);
+      }});
+      console.log(surveyResponse);
 
     const surveyId = surveyResponse.data.id;
-    console.log(surveyId);
+    console.log(surveyId)
 
     // 构建问题列表
     const questions = surveyData.value.questions.map((question, index) => ({
@@ -140,27 +174,25 @@ const submitSurvey = async () => {
 
     // 创建问题
     const questionResponse = await request.post('/question/createQuestions',
-      questions, {
-        headers: {
-          'Authorization': `Bearer ${takeAccessToken()}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+      questions
+    ,{headers: {
+        'Authorization': `Bearer ${takeAccessToken()}`,
+        'Content-Type': 'application/json'
+      }});
 
-    console.log(questionResponse);
+    console.log(questionResponse)
 
     // 获取创建的问题ID
     const createdQuestions = questionResponse.data.ids;
-    console.log(createdQuestions);
+    console.log(createdQuestions)
 
     // 构建选项列表
     const options = [];
     surveyData.value.questions.forEach((question, index) => {
-      const questionId = createdQuestions[index];
+      const questionId = createdQuestions[index].id;
       question.options.forEach((option, optionIndex) => {
         options.push({
-          questionId: questionId,
+          question_id: questionId,
           text: option.text,
           line_num: optionIndex + 1,
         });
@@ -169,36 +201,25 @@ const submitSurvey = async () => {
 
     // 创建选项
     if (options.length > 0) {
-      const optionResponse = await request.post('/option/addOptions',
-        options, {
-          headers: {
-            'Authorization': `Bearer ${takeAccessToken()}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      console.log("你好");
-      console.log(optionResponse.data);
+      
+      const optionResponse = await request.post('/option/addOptions', 
+        options
+      ,{headers: {
+        'Authorization': `Bearer ${takeAccessToken()}`,
+        'Content-Type': 'application/json'
+      }});
+      console.log("你好")
+      console.log(optionResponse.data)
     }
+    
+    
 
     ElMessage({
       message: '问卷发布成功！',
       type: 'success',
     });
 
-    // 清空 surveyData 避免重复提交同一数据
-    surveyData.value = {
-      title: '',
-      description: '',
-      start_time: null,
-      end_time: null,
-      status: 0,
-      owner_id: null,
-      modified: false,
-      questions: [],
-    };
-
-    router.push({ name: 'adminQuestionnaire' });
+    router.go(-1);
   } catch (error) {
     ElMessage.error('发布问卷时出错，请重试');
   }
