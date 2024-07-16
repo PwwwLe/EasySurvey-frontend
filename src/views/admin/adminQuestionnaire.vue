@@ -68,9 +68,12 @@ const handleEdit = (questionnaire) => {
   // todo 编辑问卷逻辑
 }
 
+const shareDrawerVisible = ref(false)
+
 const handleShare = (questionnaire) => {
   console.log('Share:', questionnaire)
   // todo 转发问卷逻辑
+  shareDrawerVisible.value = true
 }
 
 const handleDownload = (questionnaire) => {
@@ -177,6 +180,23 @@ const handleScroll = async (event) => {
       ></questionnaire>
       <!-- <el-empty v-if="!hasMoreData && questionnaires.length === 0" description="没有更多问卷"></el-empty> -->
     </div>
+
+    <el-drawer v-model="shareDrawerVisible" title="转发问卷" size="30%" :direction="'rtl'" :with-header="true">
+      <template #header>
+        <h1>转发问卷</h1>
+      </template>
+      <template #default>
+        <el-divider content-position="center"> 二维码分享 </el-divider>
+        <!-- todo 二维码  -->
+
+        <el-divider content-position="center"> 链接分享 </el-divider>
+        <!-- todo 链接  -->
+
+      </template>
+      <template #footer>
+      </template>
+    </el-drawer>
+
   </div>
 </template>
 
