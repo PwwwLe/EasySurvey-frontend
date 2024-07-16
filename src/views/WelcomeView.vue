@@ -34,7 +34,6 @@ function userLogin() {
       login(loginForm.username, loginForm.password, loginForm.role, () => {
         getInfo((data) => {
           console.log(data)
-          //ElMessage.success(`登陆成功,欢迎 ${data.data.name} 进入!`)
           if (data.user.role == 0)
             router.push('/user')
           else
@@ -43,8 +42,6 @@ function userLogin() {
       })
     }
   });
-  //直接跳到主页，调试用
-  //router.push('/index')
 }
 
 const isActive = ref(false);
@@ -107,16 +104,7 @@ const registerRule = {
 const register = () => {
   registerFormRef.value.validate((valid) => {
     if (valid) {
-      console.log(`注册表单有效`);
-      // post('/register', {
-      //     name: registerForm.username,
-      //     password: registerForm.password,
-      // }, () => {
-      //     ElMessage.success('注册成功，欢迎加入我们')
-      //     console.warn(`注册成功，欢迎加入我们`)
-      //     router.push("/")
-      // })
-      Register(registerForm.username, registerForm.password, registerForm.code, uuid, () => {
+      Register(registerForm.username, registerForm.password, registerForm.code.toString(), uuid.value.toString(), () => {
         router.push("/")
         switchToLogin()
       })
@@ -195,11 +183,11 @@ const getCaptcha = async () => {
                   </el-icon>
                 </template>
               </el-input>
-              <img v-if="captchaImage" :src="`data:image/png;base64,${captchaImage}`" alt="Captcha" @click="getCaptcha"
-                   style="cursor: pointer;"/>
               <el-button type="primary" @click="getCaptcha">
                 获取验证码
               </el-button>
+              <img v-if="captchaImage" :src="`data:image/png;base64,${captchaImage}`" alt="Captcha" @click="getCaptcha"
+                   style="cursor: pointer;"/>
             </el-form-item>
 
           </el-form>

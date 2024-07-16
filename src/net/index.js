@@ -172,29 +172,31 @@ function login(username, password, role, success, failure = defaultFailure) {
     }).catch(err => failure(err))
 }
 
-function Register(username, password, code, uuid, success, failure = defaultFailure) {
+const Register = async (username, password, code, uuid, success, failure = defaultFailure) => {
     // console.log(username)
     // console.log(password)
-    axios.post('api/register', {
-        username: username,
-        password: password,
-        code: code,
-        uuid: uuid
-    }, {
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(({data}) => {
-        console.log(data)
-        if (data.code === 200) {
-            ElMessage.success('注册成功，欢迎加入我们')
-            console.warn(`注册成功，欢迎加入我们`)
-            success(data.data)
+    try {
+        const response = await axios.post('/api/register', {
+            params: {
+                username: username,
+                password: password,
+                code: code,
+                uuid: uuid
+            },
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        console.log(response)
+        if (response.data.code === 200) {
+            ElMessage.success('注册成功！欢迎加入！')
+            success(response.data.data)
         } else {
-            defaultFailure(data.msg, data.code, 'api/register')
-            //console.warn(`请求地址: /register, 状态码: ${data.code}, 错误消息: ${data.msg}`)
+            defaultFailure(response.data.msg, response.data.code, '/api/register')
         }
-    }).catch(err => error(err))
+    } catch (error) {
+        console.log('注册出现错误：', error)
+    }
 }
 
 function UploadImage(url, queryParams, data, success, failure = defaultFailure) {
@@ -334,7 +336,7 @@ function getInfo(success, failure = defaultFailure) {
 //         .then(({ data }) => {
 //             //console.log(data);
 //             if (data.code === 1) {
-                
+
 //             } else {
 //                 failure(data.msg, data.code, fullUrl);
 //             }
@@ -391,4 +393,19 @@ function del(url, success, failure = defaultFailure) { // delete is a reserved w
 function unauthorized() {
     return !takeAccessToken();
 }
-export { login, get, post, put, patch, del, unauthorized, accessHeader, takeAccessToken, Register, UploadImage, getImage, getInfo }
+
+export {
+    login,
+    get,
+    post,
+    put,
+    patch,
+    del,
+    unauthorized,
+    accessHeader,
+    takeAccessToken,
+    Register,
+    UploadImage,
+    getImage,
+    getInfo
+}
