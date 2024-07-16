@@ -15,6 +15,7 @@ let count = ref(1)
 
 const fetchQuestionnaires = async () => {
   try {
+    console.log("第二次count:"+count.value);
     const response = await request.get('/survey/getSeveral', {
       headers: {
         ...accessHeader()
@@ -24,9 +25,12 @@ const fetchQuestionnaires = async () => {
       }
     });
 
+    console.log("count:" + count.value);
     console.log(response);
+
     questionnaires.length = 0;
-    questionnaires.push(...response.data.data.map(item => {
+    const data = response.data.data || [];  // 增加对空值的判断
+    questionnaires.push(...data.map(item => {
       return {
         ...item,
         startTime: item.startTime ? formatDateTime(item.startTime) : item.startTime,
@@ -43,6 +47,7 @@ const fetchQuestionnaires = async () => {
 };
 
 onMounted(() => {
+  // count = 1;
   fetchQuestionnaires()
 })
 
@@ -64,9 +69,10 @@ const navigateToCreateQuestionnaire = () => {
   router.push('/createQuestionnaire')
 }
 
-const handleEdit = (questionnaire) => {
-  console.log('Edit:', questionnaire)
-  // todo 编辑问卷逻辑
+//编辑逻辑
+const handleEdit = (id) => {
+  console.log('Edit:', id)
+  router.push({ name: 'editQuestionnaire', params: { questionnaireId:id } });
 }
 
 const shareDrawerVisible = ref(false)
@@ -216,6 +222,10 @@ const handleScroll = async (event) => {
     await fetchQuestionnaires()
   }
 }
+
+const searchQuestionnaires = () => {
+  router.push({ name: 'adminSearchQuestionnaire', params: { searchContent: searchContent.value } });
+};
 </script>
 
 <template>
@@ -237,6 +247,7 @@ const handleScroll = async (event) => {
             style="max-width: 600px"
             placeholder="请输入问卷标题"
             class="input-with-select"
+            @keyup.enter="searchQuestionnaires"
         >
           <template #append>
             <el-button :icon="Search"/>
@@ -250,7 +261,7 @@ const handleScroll = async (event) => {
           v-for="item in questionnaires"
           :key="item.id"
           :questionnaire="item"
-          @edit="handleEdit"
+          @edit="handleEdit(item.id)"
           @share="handleShare"
           @download="handleDownload"
           @delete="handleDelete"
