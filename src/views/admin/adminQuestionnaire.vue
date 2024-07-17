@@ -333,7 +333,7 @@ const searchQuestionnaires = () => {
           @download="handleDownload"
           @delete="handleDelete"
           @remind="handleRemind"
-          style="margin-bottom: 10px;"
+          style="margin-bottom: 10px;width: 80%"
       ></questionnaire>
       <!-- <el-empty v-if="!hasMoreData && questionnaires.length === 0" description="没有更多问卷"></el-empty> -->
     </div>
@@ -413,8 +413,11 @@ const searchQuestionnaires = () => {
   }
 
   .main {
-    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     overflow-y: auto;
+    padding: 10px;
   }
 }
 </style>
