@@ -15,7 +15,7 @@ let count = ref(1)
 
 const fetchQuestionnaires = async () => {
   try {
-    console.log("第二次count:"+count.value);
+    console.log("第二次count:" + count.value);
     const response = await request.get('/survey/getSeveral', {
       headers: {
         ...accessHeader()
@@ -46,9 +46,23 @@ const fetchQuestionnaires = async () => {
   }
 };
 
+const fetchIndustries = async () => {
+  try {
+    const response = await axios.get('/api/user/getAllIndustry')
+    if (response.status === 200) {
+      industries.value = response.data.data.map(item => ({label: item.name, value: String(item.id)}))
+    } else {
+      console.warn('返回状态出错!')
+    }
+  } catch (error) {
+    console.error('获取行业信息出错：', error)
+  }
+}
+
 onMounted(() => {
   // count = 1;
   fetchQuestionnaires()
+  fetchIndustries()
 })
 
 const formatDateTime = (time) => {
@@ -66,7 +80,9 @@ const formatDateTime = (time) => {
 }
 
 const navigateToCreateQuestionnaire = () => {
-  router.push('/createQuestionnaire')
+  router.push('/createQuestionnaire').then(() => {
+    location.reload();
+  });
 }
 
 //编辑逻辑
@@ -117,13 +133,7 @@ const openLink = () => {
   window.open(shareLink.value, '_blank')
 }
 
-// todo 更改行业信息
-const industries = ref([
-  {value: 1, label: 'IT'},
-  {value: 2, label: 'Finance'},
-  {value: 3, label: 'Healthcare'},
-]);
-
+const industries = ref([]);
 const selectedIndustries = ref([]);
 const checkAll = ref(false);
 const indeterminate = ref(false);
@@ -136,22 +146,25 @@ const handleCheckAll = () => {
   }
   indeterminate.value = false;
 };
+
 const handleDistribute = async () => {
   try {
-    if (!currentQuestionnaire.value) {
-      ElMessage.error('未选中行业')
-    }
-    const response = await request.post('/publish/send', null, {
-      headers: {
-        ...accessHeader()
-      },
-      params: {
-        id: currentQuestionnaire.value.id,
-        industries: selectedIndustries.value
-      }
-    })
-    console.log(response)
-    if (response.status === 200) {
+    const requests = selectedIndustries.value.map(industryId => {
+      return request.post('/publish/send', null, {
+        headers: {
+          ...accessHeader()
+        },
+        params: {
+          surveyId: currentQuestionnaire.value.id,
+          industryId: industryId,
+          required: true
+        }
+      });
+    });
+    const responses = await Promise.all(requests);
+    // 检查所有响应状态
+    const allSuccess = responses.every(response => response.status === 200);
+    if (allSuccess) {
       ElMessage.success('问卷分发成功!')
     } else {
       ElMessage.error('问卷分发失败!')
@@ -237,7 +250,9 @@ const handleScroll = async (event) => {
 }
 
 const searchQuestionnaires = () => {
-  router.push({ name: 'adminSearchQuestionnaire', params: { searchContent: searchContent.value } });
+  router.push({name: 'adminSearchQuestionnaire', params: {searchContent: searchContent.value}}).then(() => {
+    location.reload();
+  });
 };
 </script>
 
@@ -324,10 +339,10 @@ const searchQuestionnaires = () => {
               </el-checkbox>
             </template>
             <el-option
-                v-for="item in industries"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                v-for="industry in industries"
+                :key="industry.value"
+                :label="industry.label"
+                :value="industry.value"
             />
           </el-select>
           <el-button type="primary" @click="handleDistribute">分发问卷</el-button>

@@ -1,5 +1,5 @@
 <script setup>
-import {reactive, ref} from "vue";
+import {reactive, ref, onMounted} from "vue";
 import {accessHeader, get, patch, post, UploadImage} from "@/net";
 import {ElMessage} from "element-plus";
 import router from "@/router";
@@ -7,6 +7,7 @@ import {ElCard, ElRow, ElCol, ElButton, ElInput, ElSelect, ElOption, ElUpload} f
 
 
 import {Plus} from '@element-plus/icons-vue'
+import axios from "axios";
 
 const id = ref(0);
 
@@ -19,17 +20,33 @@ const editData = reactive({
   businessScope: '',
 });
 
-get('/api/user/userInfo', data => {
-  id.value = data.user.id;
-  editData.avatar = data.user.avatar || ''; // 填充头像
-  editData.president = data.user.president || ''; // 填充代表人
-  editData.industry = data.industry.map(item => String(item.id)); // 填充所属行业
-  editData.email = data.user.email || ''; // 填充邮箱
-  editData.businessScope = data.user.businessScope || ''; // 填充经营范围
-});
+const industries = ref([])
+const fetchIndustries = async () => {
+  try {
+    const response = await axios.get('/api/user/getAllIndustry')
+    if (response.status === 200) {
+      industries.value = response.data.data.map(item => ({label: item.name, value: String(item.id)}))
+    } else {
+      console.warn('返回状态出错!')
+    }
+  } catch (error) {
+    console.error('获取行业信息出错：', error)
+  }
+}
+
+onMounted(async () => {
+  await fetchIndustries()
+  get('/api/user/userInfo', data => {
+    id.value = data.user.id;
+    editData.avatar = data.user.avatar || ''; // 填充头像
+    editData.president = data.user.president || ''; // 填充代表人
+    editData.industry = data.industry.map(item => String(item.id)); // 填充所属行业
+    editData.email = data.user.email || ''; // 填充邮箱
+    editData.businessScope = data.user.businessScope || ''; // 填充经营范围
+  });
+})
 
 function saveInfo() {
-  console.log('Saving edited information:', editData);
   patch(
       '/api/user/updateBaseInfo',
       {industryIds: editData.industry}, // 将 industry 作为 query 参数传递
@@ -41,7 +58,13 @@ function saveInfo() {
       },
       () => {
         ElMessage.success('基本资料修改成功！');
-        router.push('/user/basicInfo'); // 保存成功后返回基本信息页面
+        router.push('/user/basicInfo').then(() => {
+          location.reload();
+        });
+      },
+      (error) => {
+        console.error('Patch request failed:', error);
+        ElMessage.error('基本资料修改失败，请重试');
       }
   );
 }
@@ -103,7 +126,9 @@ function handlePictureCardPreview(file) {
 
 <template>
   <!-- 返回按钮 -->
-  <el-button type="primary" @click="() => router.push('/user/basicInfo')" class="back-button">返回</el-button>
+  <el-button type="primary" @click="() => router.push('/user/basicInfo').then(() => {location.reload()})"
+             class="back-button">返回
+  </el-button>
 
   <el-card class="edit-info-card">
     <h3 slot="header" class="card-title">修改基本资料</h3>
@@ -128,11 +153,8 @@ function handlePictureCardPreview(file) {
       <el-col :span="8">所属行业:</el-col>
       <el-col :span="16">
         <el-select v-model="editData.industry" multiple collapse-tags placeholder="请选择所属行业">
-          <!-- todo 更改行业信息 -->
-          <el-option label="IT" value="1"></el-option>
-          <el-option label="Finance" value="2"></el-option>
-          <el-option label="Healthcare" value="3"></el-option>
-          <el-option label="Education" value="4"></el-option>
+          <el-option v-for="industry in industries" :key="industry.value" :label="industry.label"
+                     :value="industry.value"></el-option>
         </el-select>
       </el-col>
     </el-row>
