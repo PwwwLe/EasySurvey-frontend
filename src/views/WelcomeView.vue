@@ -35,9 +35,13 @@ function userLogin() {
         getInfo((data) => {
           console.log(data)
           if (data.user.role == 0)
-            router.push('/user')
+            router.push('/user').then(() => {
+              location.reload();
+            });
           else
-            router.push('/admin')
+            router.push('/admin').then(() => {
+              location.reload();
+            });
         })
       })
     }
@@ -109,7 +113,9 @@ const register = async () => {
         // todo 测试验证码逻辑
         // await Register(registerForm.username, registerForm.password, registerForm.code, uuid.value);
         await Register(registerForm.username, registerForm.password);
-        await router.push("/");
+        await router.push("/").then(() => {
+          location.reload();
+        });
         switchToLogin();
       } catch (error) {
         console.error('注册失败：', error);

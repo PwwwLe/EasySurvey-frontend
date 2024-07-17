@@ -1,6 +1,6 @@
 import {defineStore} from "pinia";
 import axios from "axios";
-import {ElMessage, ElMessageBox} from "element-plus";
+import {ElMessage} from "element-plus";
 
 const authItemName = 'access_token'
 
@@ -42,9 +42,11 @@ export const useStore = defineStore('general', {
             this.clearUser()
             ElMessage.success('成功登出！')
             try {
-                await router.push('/')
-            }catch (error) {
-                console.log('路由跳转失败：' , error)
+                await router.push('/').then(() => {
+                    location.reload();
+                });
+            } catch (error) {
+                console.log('路由跳转失败：', error)
             }
         }
     }
