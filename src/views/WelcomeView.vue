@@ -63,7 +63,7 @@ const registerForm = reactive({
   username: '',
   password: '',
   password_repeat: '',
-  // code: ''
+  code: ''
 })
 
 const registerFormRef = ref()
@@ -110,11 +110,9 @@ const register = async () => {
     if (valid) {
       try {
         // todo 测试验证码逻辑
-        // await Register(registerForm.username, registerForm.password, registerForm.code, uuid.value);
-        await Register(registerForm.username, registerForm.password);
-        await router.push("/").then(() => {
-          location.reload();
-        });
+        await Register(registerForm.username, registerForm.password, registerForm.code, uuid.value);
+        // await Register(registerForm.username, registerForm.password);
+        await router.push("/");
         switchToLogin();
       } catch (error) {
         console.error('注册失败：', error);
@@ -180,6 +178,17 @@ const getCaptcha = async () => {
                   </el-icon>
                 </template>
               </el-input>
+            </el-form-item>
+            <el-form-item prop="code">
+              <el-input v-model="registerForm.code" maxlength="20" placeholder="输入验证码">
+                <template #prefix>
+                  <el-icon>
+                    <CircleCheck />
+                  </el-icon>
+                </template>
+              </el-input>
+              <img v-if="captchaImage" :src="`data:image/png;base64,${captchaImage}`" alt="Captcha" @click="getCaptcha"
+                   style="cursor: pointer; margin-top: 20px"/>
             </el-form-item>
           </el-form>
           <div style="margin-top: 20px;">
