@@ -1,7 +1,9 @@
 <script setup>
-import {defineProps, defineEmits} from 'vue'
+import {defineProps, defineEmits, ref, onMounted} from 'vue'
 import {ElMessage} from 'element-plus'
 import {Edit, Share, Download, Bell, Delete} from '@element-plus/icons-vue'
+import axios from "axios";
+import {accessHeader} from "@/net/index.js";
 
 const props = defineProps({
   questionnaire: {
@@ -9,6 +11,8 @@ const props = defineProps({
     required: true
   }
 })
+
+const percentage = ref(0)
 
 const emits = defineEmits(['edit', 'share', 'download', 'delete', 'remind'])
 
@@ -31,6 +35,27 @@ const handleDelete = () => {
 const handleRemind = () => {
   emits('remind', props.questionnaire)
 }
+
+const getProgress = async () => {
+  try {
+    const response = await axios.get('/api/publish/getHaveCompleted', {
+      headers: {
+        ...accessHeader()
+      },
+      params: {
+        surveyId: props.questionnaire.id
+      }
+    })
+    console.log('填写进度返回: ', response)
+    percentage.value = response.data.data * 100
+  } catch (error) {
+    console.error('获取填写进度失败: ', error)
+  }
+}
+
+onMounted(() => {
+  getProgress()
+})
 </script>
 
 <template>
@@ -49,7 +74,7 @@ const handleRemind = () => {
       </div>
       <div class="head-progress">
         <el-text type="info" size="large">填写进度</el-text>
-        <el-progress :text-inside="true" :stroke-width="26" :percentage="70" class="progress-bar"/>
+        <el-progress :text-inside="true" :stroke-width="26" :percentage="percentage" class="progress-bar"/>
       </div>
 
     </template>

@@ -211,6 +211,9 @@ const handleDistribute = async () => {
 
     if (allSuccess) {
       ElMessage.success('问卷分发成功!');
+      setTimeout(() => {
+        location.reload();
+      }, 500);
     } else {
       const failedRequests = responses.filter(response => response.status === 'rejected' || (response.status === 'fulfilled' && response.value.status !== 200));
       console.error('分发失败的请求: ', failedRequests);
