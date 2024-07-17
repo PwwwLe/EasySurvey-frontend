@@ -1,12 +1,12 @@
 <script setup>
-import { ref, nextTick,watch  } from 'vue';
-import { ElButton, ElInput, ElDatePicker, ElMessage } from 'element-plus';
-import { Select } from '@element-plus/icons-vue';
+import {ref, nextTick, watch} from 'vue';
+import {ElButton, ElInput, ElDatePicker, ElMessage} from 'element-plus';
+import {Select} from '@element-plus/icons-vue';
 import axios from 'axios';
 import question from '@/components/question.vue';
-import { useRouter } from 'vue-router';
+import {useRouter} from 'vue-router';
 import request from '@/utils/request.js';
-import { takeAccessToken } from "@/net";
+import {takeAccessToken} from "@/net";
 
 const router = useRouter();
 const surveyData = ref({
@@ -41,8 +41,8 @@ const addQuestion = (type) => {
   };
 
   if (type === 1 || type === 2 || type === 4 || type === 5) {
-    newQuestion.options.push({ text: '', line_num: 1 });
-    newQuestion.options.push({ text: '', line_num: 2 });
+    newQuestion.options.push({text: '', line_num: 1});
+    newQuestion.options.push({text: '', line_num: 2});
   }
 
   surveyData.value.questions.push(newQuestion);
@@ -140,12 +140,12 @@ const submitSurvey = async () => {
 
     // 创建问题
     const questionResponse = await request.post('/question/createQuestions',
-      questions, {
-        headers: {
-          'Authorization': `Bearer ${takeAccessToken()}`,
-          'Content-Type': 'application/json'
+        questions, {
+          headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`,
+            'Content-Type': 'application/json'
+          }
         }
-      }
     );
 
     console.log(questionResponse);
@@ -170,12 +170,12 @@ const submitSurvey = async () => {
     // 创建选项
     if (options.length > 0) {
       const optionResponse = await request.post('/option/addOptions',
-        options, {
-          headers: {
-            'Authorization': `Bearer ${takeAccessToken()}`,
-            'Content-Type': 'application/json'
+          options, {
+            headers: {
+              'Authorization': `Bearer ${takeAccessToken()}`,
+              'Content-Type': 'application/json'
+            }
           }
-        }
       );
       console.log("你好");
       console.log(optionResponse.data);
@@ -198,7 +198,9 @@ const submitSurvey = async () => {
       questions: [],
     };
 
-    router.push({ name: 'adminQuestionnaire' });
+    router.push({name: 'adminQuestionnaire'}).then(() => {
+      location.reload();
+    });
   } catch (error) {
     ElMessage.error('发布问卷时出错，请重试');
   }
@@ -255,59 +257,61 @@ const saveDescription = () => {
             <!-- 修改标题 -->
             <div @click="editTitle" v-if="!isEditingTitle" class="editable-text">
               <el-text
-                style="font-size: 36px; text-align: center; display: block; color: #2c3e50; margin-bottom: 20px"
-                >{{ surveyData.title || '点击修改问卷标题' }}</el-text>
+                  style="font-size: 36px; text-align: center; display: block; color: #2c3e50; margin-bottom: 20px"
+              >{{ surveyData.title || '点击修改问卷标题' }}
+              </el-text>
             </div>
             <el-input
-              v-model="surveyData.title"
-              v-if="isEditingTitle"
-              placeholder="点击修改问卷标题"
-              @blur="saveTitle"
-              class="title-input"
-              ref="titleInputRef"
-              style="font-size: 36px; text-align: center; display: block; color: #2c3e50; margin-bottom: 20px"
+                v-model="surveyData.title"
+                v-if="isEditingTitle"
+                placeholder="点击修改问卷标题"
+                @blur="saveTitle"
+                class="title-input"
+                ref="titleInputRef"
+                style="font-size: 36px; text-align: center; display: block; color: #2c3e50; margin-bottom: 20px"
             />
             <!-- 修改描述 -->
             <div @click="editDescription" v-if="!isEditingDescription" class="editable-text">
               <el-text type="info" style="font-size: 20px; text-align: center; display: block;"
-                >{{ surveyData.description || '添加问卷描述' }}</el-text>
+              >{{ surveyData.description || '添加问卷描述' }}
+              </el-text>
             </div>
             <el-input
-              type="textarea"
-              v-model="surveyData.description"
-              v-if="isEditingDescription"
-              placeholder="添加问卷描述"
-              @blur="saveDescription"
-              ref="descriptionInputRef"
-              style="font-size: 20px; text-align: center; display: block;"
+                type="textarea"
+                v-model="surveyData.description"
+                v-if="isEditingDescription"
+                placeholder="添加问卷描述"
+                @blur="saveDescription"
+                ref="descriptionInputRef"
+                style="font-size: 20px; text-align: center; display: block;"
             />
           </div>
         </template>
         <div class="questionnaire-body">
           <question
-            v-for="(question, index) in surveyData.questions"
-            :key="index"
-            :question="question"
-            :isEditing="question.isEditing"
-            @update-question="updateQuestion(index, $event)"
-            @delete-question="deleteQuestion(index)"
-            @toggle-editing="toggleEditing(index)"
+              v-for="(question, index) in surveyData.questions"
+              :key="index"
+              :question="question"
+              :isEditing="question.isEditing"
+              @update-question="updateQuestion(index, $event)"
+              @delete-question="deleteQuestion(index)"
+              @toggle-editing="toggleEditing(index)"
           />
         </div>
 
         <template #footer>
           <div class="questionnaire-footer">
             <div class="block">
-      <el-date-picker
-        v-model="dateRange"
-        type="datetimerange"
-        start-placeholder="Start date"
-        end-placeholder="End date"
-        format="YYYY-MM-DD HH:mm:ss"
-        date-format="YYYY/MM/DD ddd"
-        time-format="A hh:mm:ss"
-      />
-    </div>
+              <el-date-picker
+                  v-model="dateRange"
+                  type="datetimerange"
+                  start-placeholder="Start date"
+                  end-placeholder="End date"
+                  format="YYYY-MM-DD HH:mm:ss"
+                  date-format="YYYY/MM/DD ddd"
+                  time-format="A hh:mm:ss"
+              />
+            </div>
             <el-button type="primary" @click="submitSurvey">发布问卷</el-button>
           </div>
         </template>
@@ -328,6 +332,7 @@ const saveDescription = () => {
   flex: 0 0 calc(50% - 10px);
   margin: 5px;
 }
+
 .questionnaire-header {
   margin-bottom: 20px;
 }

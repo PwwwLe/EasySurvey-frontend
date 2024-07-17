@@ -172,60 +172,29 @@ function login(username, password, role, success, failure = defaultFailure) {
     }).catch(err => failure(err))
 }
 
-/* todo 测试验证码逻辑
-const Register = async (username, password, code, uuid, success, failure = defaultFailure) => {
-    // console.log(username)
-    // console.log(password)
+const Register = async (username, password, code, uuid) => {
     try {
         const response = await axios.post('/api/register', {
-            params: {
-                username: username,
-                password: password,
-                code: code,
-                uuid: uuid
-            },
+            username: username,
+            password: password,
+            code: code,
+            uuid: uuid
+        }, {
             headers: {
                 'Content-Type': 'application/json'
             }
         })
-        console.log(response)
-        if (response.data.code === 200) {
+        if (response.status === 200) {
             ElMessage.success('注册成功！欢迎加入！')
-            success(response.data.data)
         } else {
-            defaultFailure(response.data.msg, response.data.code, '/api/register')
+            ElMessage.error('注册失败！')
         }
     } catch (error) {
         console.log('注册出现错误：', error)
     }
 }
-*/
-const Register = async (username, password) => {
-    try {
-        const response = await axios.post('/api/register', {
-            username: username,
-            password: password,
-        }, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        console.log(response)
-        if (response.status === 200) {
-            ElMessage.success('注册成功，欢迎加入！')
-        } else {
-            ElMessage.error('注册失败！')
-        }
-    } catch (error) {
-        console.error('注册时错误：', error)
-    }
-}
 
 function UploadImage(url, queryParams, data, success, failure = defaultFailure) {
-    console.log(url);
-    console.log(data);
-    console.log(queryParams);
-
     // 将 Base64 字符串转换为 Blob
     const base64Data = queryParams.file.split(',')[1]; // 去除 data:image/jpeg;base64,
     const byteCharacters = atob(base64Data);
