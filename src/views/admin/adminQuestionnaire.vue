@@ -15,7 +15,7 @@ let count = ref(1)
 
 const fetchQuestionnaires = async () => {
   try {
-    console.log("第二次count:"+count.value);
+    console.log("第二次count:" + count.value);
     const response = await request.get('/survey/getSeveral', {
       headers: {
         ...accessHeader()
@@ -46,9 +46,23 @@ const fetchQuestionnaires = async () => {
   }
 };
 
+const fetchIndustries = async () => {
+  try {
+    const response = await axios.get('/api/user/getAllIndustry')
+    if (response.status === 200) {
+      industries.value = response.data.data.map(item => ({label: item.name, value: String(item.id)}))
+    } else {
+      console.warn('返回状态出错!')
+    }
+  } catch (error) {
+    console.error('获取行业信息出错：', error)
+  }
+}
+
 onMounted(() => {
   // count = 1;
   fetchQuestionnaires()
+  fetchIndustries()
 })
 
 const formatDateTime = (time) => {
@@ -66,13 +80,17 @@ const formatDateTime = (time) => {
 }
 
 const navigateToCreateQuestionnaire = () => {
-  router.push('/createQuestionnaire')
+  router.push('/createQuestionnaire').then(() => {
+    location.reload();
+  });
 }
 
 //编辑逻辑
 const handleEdit = (id) => {
   console.log('Edit:', id)
-  router.push({ name: 'editQuestionnaire', params: { questionnaireId:id } });
+  router.push({name: 'editQuestionnaire', params: {questionnaireId: id}}).then(() => {
+    location.reload();
+  });
 }
 
 const shareDrawerVisible = ref(false)
@@ -117,13 +135,7 @@ const openLink = () => {
   window.open(shareLink.value, '_blank')
 }
 
-// todo 更改行业信息
-const industries = ref([
-  {value: 1, label: 'IT'},
-  {value: 2, label: 'Finance'},
-  {value: 3, label: 'Healthcare'},
-]);
-
+const industries = ref([]);
 const selectedIndustries = ref([]);
 const checkAll = ref(false);
 const indeterminate = ref(false);
@@ -224,7 +236,9 @@ const handleScroll = async (event) => {
 }
 
 const searchQuestionnaires = () => {
-  router.push({ name: 'adminSearchQuestionnaire', params: { searchContent: searchContent.value } });
+  router.push({name: 'adminSearchQuestionnaire', params: {searchContent: searchContent.value}}).then(() => {
+    location.reload();
+  });
 };
 </script>
 
