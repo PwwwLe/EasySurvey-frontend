@@ -1,5 +1,4 @@
 <script setup>
-
 import {computed, reactive, ref} from "vue";
 import {ChatDotSquare, CircleCheck, Lock, Message, User} from "@element-plus/icons-vue";
 import {login, get, post, Register, getInfo} from "@/net";
@@ -7,7 +6,7 @@ import {ElMessage} from "element-plus";
 import router from "@/router";
 import axios from "axios";
 
-//登录方面
+// 登录方面
 const loginForm = reactive({
   username: '',
   password: '',
@@ -59,7 +58,7 @@ const switchToRegister = () => {
   getCaptcha();
 };
 
-//注册方面
+// 注册方面
 const registerForm = reactive({
   username: '',
   password: '',
@@ -154,11 +153,6 @@ const getCaptcha = async () => {
         <form>
           <h1 style="margin-bottom: 20px;">创建用户账号</h1>
           <span style="margin-bottom: 20px;">注册你的用户名和密码</span>
-          <!-- <input type="text" placeholder="UserName">
-                    <input type="email" placeholder="Email">
-                    <input type="password" placeholder="Password">
-                    <button @click.prevent="signUp">注册</button> -->
-
           <el-form :model="registerForm" :rules="registerRule" ref="registerFormRef">
             <el-form-item prop="username">
               <el-input v-model="registerForm.username" maxlength="10" type="text" placeholder="用户名">
@@ -169,7 +163,6 @@ const getCaptcha = async () => {
                 </template>
               </el-input>
             </el-form-item>
-
             <el-form-item prop="password">
               <el-input v-model="registerForm.password" maxlength="20" type="password" placeholder="密码">
                 <template #prefix>
@@ -179,7 +172,6 @@ const getCaptcha = async () => {
                 </template>
               </el-input>
             </el-form-item>
-
             <el-form-item prop="password_repeat">
               <el-input v-model="registerForm.password_repeat" maxlength="20" type="password" placeholder="确认密码">
                 <template #prefix>
@@ -189,22 +181,6 @@ const getCaptcha = async () => {
                 </template>
               </el-input>
             </el-form-item>
-            <!--  todo 测试验证码
-
-            <el-form-item>
-            <el-input v-model="registerForm.code" maxlength="20" placeholder="输入验证码">
-              <template #prefix>
-                <el-icon>
-                  <CircleCheck/>
-                </el-icon>
-              </template>
-            </el-input>
-            <img v-if="captchaImage" :src="`data:image/png;base64,${captchaImage}`" alt="Captcha" @click="getCaptcha"
-                 style="cursor: pointer;"/>
-            </el-form-item>
-            -->
-
-
           </el-form>
           <div style="margin-top: 20px;">
             <el-button @click="register" style="width: 270px" type="warning" plain>注册</el-button>
@@ -215,8 +191,6 @@ const getCaptcha = async () => {
         <form>
           <h1 style="margin-bottom: 20px;">登录</h1>
           <span style="margin-bottom: 20px;">使用你的用户名和密码</span>
-          <!-- <input type="text" placeholder="Username">
-                    <input type="password" placeholder="Password"> -->
           <el-form :model="loginForm" :rules="loginRule" ref="loginFormRef">
             <el-form-item prop="role" style="width: 220px">
               <el-select v-model="loginForm.role">
@@ -224,7 +198,6 @@ const getCaptcha = async () => {
                 <el-option value="1" label="管理员"/>
               </el-select>
             </el-form-item>
-
             <el-form-item prop="username">
               <el-input v-model="loginForm.username" maxlength="25" type="text" placeholder="用户名">
                 <template #prefix>
@@ -234,7 +207,6 @@ const getCaptcha = async () => {
                 </template>
               </el-input>
             </el-form-item>
-
             <el-form-item prop="password">
               <el-input v-model="loginForm.password" type="password" maxlength="20" placeholder="密码">
                 <template #prefix>
@@ -248,8 +220,6 @@ const getCaptcha = async () => {
           <div style="margin-top: 20px">
             <el-button @click="userLogin" style="width: 270px" type="success" plain>立即登录</el-button>
           </div>
-          <!-- <a href="#">忘记密码?</a>
-                    <button @click.prevent="signIn">登录</button> -->
         </form>
       </div>
       <div class="toggle-container">
@@ -370,7 +340,6 @@ body {
 .form-container {
   position: absolute;
   top: 0;
-  /* height: 100%; */
   transition: all 0.6s ease-in-out;
   margin-top: 15%;
 }
