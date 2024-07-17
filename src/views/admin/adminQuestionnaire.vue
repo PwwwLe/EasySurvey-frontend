@@ -108,11 +108,9 @@ const navigateToCreateQuestionnaire = () => {
 }
 
 //编辑逻辑
-const handleEdit = (id) => {
-  console.log('Edit:', id)
-  router.push({name: 'editQuestionnaire', params: {questionnaireId: id}}).then(() => {
-    location.reload();
-  });
+const handleEdit = (questionnaire) => {
+  // console.log('Edit:', questionnaire)
+  router.push({ name: 'editQuestionnaire', params: { questionnaire:JSON.stringify(questionnaire) } });
 }
 
 const shareDrawerVisible = ref(false)
@@ -273,9 +271,22 @@ const handleDelete = async (questionnaire) => {
   }
 }
 
-const handleRemind = (questionnaire) => {
+// 提醒问卷逻辑
+const handleRemind = async (questionnaire) => {
   console.log('Remind:', questionnaire)
-  // todo 提醒问卷逻辑
+  questionnaire.status = 1;
+  await request.put("/survey/updateSurvey", questionnaire, {
+    headers: {
+      'Authorization': `Bearer ${takeAccessToken()}`,
+      'Content-Type': 'application/json'
+    }
+  })
+
+  ElMessage({
+        type: 'success',
+        message: '已提醒用户',
+      })
+
 }
 
 const handleScroll = async (event) => {
@@ -328,7 +339,7 @@ const searchQuestionnaires = () => {
           v-for="item in questionnaires"
           :key="item.id"
           :questionnaire="item"
-          @edit="handleEdit(item.id)"
+          @edit="handleEdit($event)"
           @share="handleShare"
           @download="handleDownload"
           @delete="handleDelete"
