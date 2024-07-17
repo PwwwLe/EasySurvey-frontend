@@ -126,9 +126,8 @@ function handlePictureCardPreview(file) {
 
 <template>
   <!-- 返回按钮 -->
-  <el-button type="primary" @click="() => router.push('/user/basicInfo').then(() => {
-          location.reload();
-        });" class="back-button">返回
+  <el-button type="primary" @click="() => router.push('/user/basicInfo').then(() => {location.reload()})"
+             class="back-button">返回
   </el-button>
 
   <el-card class="edit-info-card">
