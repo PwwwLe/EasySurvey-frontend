@@ -1,7 +1,7 @@
 <script setup>
-import { defineProps, defineEmits } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Edit, Share, Download, Bell, Delete } from '@element-plus/icons-vue'
+import {defineProps, defineEmits} from 'vue'
+import {ElMessage} from 'element-plus'
+import {Edit, Share, Download, Bell, Delete} from '@element-plus/icons-vue'
 
 const props = defineProps({
   questionnaire: {
@@ -39,7 +39,6 @@ const handleRemind = () => {
       <div class="card-header">
         <div class="head-left">
           <el-text style="font-size: larger">{{ questionnaire.title }}</el-text>
-          <el-progress :text-inside="true" :stroke-width="26" :percentage="70" />
         </div>
         <div class="head-right">
           <div class="time">
@@ -48,28 +47,36 @@ const handleRemind = () => {
           </div>
         </div>
       </div>
+      <div class="head-progress">
+        <el-text type="info" size="large">填写进度</el-text>
+        <el-progress :text-inside="true" :stroke-width="26" :percentage="70" class="progress-bar"/>
+      </div>
+
     </template>
     <div class="card-main">
       <div class="main-left">
         <div style="margin-right: 5px">
           <el-button class="custom-button" key="编辑" plain text @click="handleEdit">
             <el-icon>
-              <Edit />
-            </el-icon> 编辑问卷
+              <Edit/>
+            </el-icon>
+            编辑问卷
           </el-button>
         </div>
         <div style="margin-right: 5px">
           <el-button class="custom-button" key="转发" plain text @click="handleShare">
             <el-icon>
-              <Share />
-            </el-icon> 转发问卷
+              <Share/>
+            </el-icon>
+            转发问卷
           </el-button>
         </div>
         <div style="margin-right: 5px">
           <el-button class="custom-button" key="分析" plain text @click="handleDownload">
             <el-icon>
-              <Download />
-            </el-icon> 分析&下载
+              <Download/>
+            </el-icon>
+            分析&下载
           </el-button>
         </div>
       </div>
@@ -77,15 +84,17 @@ const handleRemind = () => {
         <div style="margin-right: 5px">
           <el-button class="custom-button" key="删除" type="danger" text @click="handleDelete">
             <el-icon>
-              <Delete />
-            </el-icon> 删除
+              <Delete/>
+            </el-icon>
+            删除
           </el-button>
         </div>
         <div style="margin-right: 5px">
           <el-button class="custom-button" key="提醒" type="primary" text @click="handleRemind">
             <el-icon>
-              <Bell />
-            </el-icon> 提醒
+              <Bell/>
+            </el-icon>
+            提醒
           </el-button>
         </div>
       </div>
@@ -113,32 +122,54 @@ const handleRemind = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   .head-left {
     display: flex;
     align-items: center;
+
     .el-text {
       margin-right: 10px;
     }
   }
+
   .head-right {
     display: flex;
     justify-content: center;
     align-items: center;
+
     .time {
       display: flex;
       flex-direction: column;
       font-size: smaller;
     }
   }
+
+}
+
+.head-progress {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.head-progress .el-text {
+  margin-right: 10px;
+}
+
+.progress-bar {
+  flex-grow: 1;
+  margin: 0 20px;
 }
 
 .card-main {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   .main-left {
     display: flex;
   }
+
   .main-right {
     display: flex;
   }

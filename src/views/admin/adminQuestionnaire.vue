@@ -48,7 +48,12 @@ const fetchQuestionnaires = async () => {
 
 const fetchIndustries = async () => {
   try {
-    const response = await axios.get('/api/user/getAllIndustry')
+    const response = await axios.get('/api/user/getAllIndustry', {
+      headers: {
+        ...accessHeader()
+      }
+    })
+    console.log(response)
     if (response.status === 200) {
       industries.value = response.data.data.map(item => ({label: item.name, value: String(item.id)}))
     } else {
@@ -56,6 +61,23 @@ const fetchIndustries = async () => {
     }
   } catch (error) {
     console.error('获取行业信息出错：', error)
+  }
+}
+
+const fetchDistributedIndustries = async () => {
+  try {
+    const response = await axios.get('/api/publish/getAll', {
+      headers: {
+        ...accessHeader()
+      }
+    })
+    console.log('getAll 返回的 response： ', response)
+    if (response.status === 200) {
+      publish.value = response.data.data
+      console.log('publish: ', publish)
+    }
+  } catch (error) {
+    console.error('获取已分发行业信息出错：', error)
   }
 }
 
@@ -97,11 +119,11 @@ const shareDrawerVisible = ref(false)
 const shareLink = ref('')
 const qrCode = ref('')
 const currentQuestionnaire = ref(null);
+const publish = ref([])
 
 const handleShare = (questionnaire) => {
   console.log('Share:', questionnaire)
   currentQuestionnaire.value = questionnaire
-  // todo 转发问卷逻辑
   shareDrawerVisible.value = true
 }
 
@@ -151,30 +173,55 @@ const handleCheckAll = () => {
 
 const handleDistribute = async () => {
   try {
-    const requests = selectedIndustries.value.map(industryId => {
-      return request.post('/publish/send', null, {
+    await fetchDistributedIndustries();
+
+    const industriesToDistribute = ref(
+        selectedIndustries.value.filter(industryId => {
+          return !publish.value.some(p => p.surveyId == currentQuestionnaire.value.id && p.industryId == industryId);
+        })
+    );
+
+    if (industriesToDistribute.value.length === 0) {
+      ElMessage.info('所有选定的行业已经分发过问卷，无需重复分发');
+      return;
+    }
+
+    const requests = industriesToDistribute.value.map(industryId => {
+      return request.post('/publish/send', {
+        surveyId: currentQuestionnaire.value.id,
+        industryId: industryId,
+        required: true
+      }, {
         headers: {
           ...accessHeader()
-        },
-        params: {
-          surveyId: currentQuestionnaire.value.id,
-          industryId: industryId,
-          required: true
         }
       });
     });
-    const responses = await Promise.all(requests);
-    // 检查所有响应状态
-    const allSuccess = responses.every(response => response.status === 200);
+
+    const responses = await Promise.allSettled(requests);
+    responses.forEach((response, index) => {
+      if (response.status === 'fulfilled') {
+        console.log(`Response for industryId ${selectedIndustries.value[index]}:`, response.value);
+      } else {
+        console.error(`Error for industryId ${selectedIndustries.value[index]}:`, response.reason);
+      }
+    });
+
+    const allSuccess = responses.every(response => response.status === 'fulfilled' && response.value.status === 200);
+
     if (allSuccess) {
-      ElMessage.success('问卷分发成功!')
+      ElMessage.success('问卷分发成功!');
     } else {
-      ElMessage.error('问卷分发失败!')
+      const failedRequests = responses.filter(response => response.status === 'rejected' || (response.status === 'fulfilled' && response.value.status !== 200));
+      console.error('分发失败的请求: ', failedRequests);
+      ElMessage.error('部分问卷分发失败!');
     }
   } catch (error) {
     console.error('分发失败: ', error);
+    ElMessage.error('问卷分发失败!');
   }
-}
+};
+
 
 const handleDownload = (questionnaire) => {
   console.log('Download:', questionnaire)
