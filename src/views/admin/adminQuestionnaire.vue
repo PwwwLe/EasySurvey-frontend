@@ -148,22 +148,25 @@ const handleCheckAll = () => {
   }
   indeterminate.value = false;
 };
+
 const handleDistribute = async () => {
   try {
-    if (!currentQuestionnaire.value) {
-      ElMessage.error('未选中行业')
-    }
-    const response = await request.post('/publish/send', null, {
-      headers: {
-        ...accessHeader()
-      },
-      params: {
-        id: currentQuestionnaire.value.id,
-        industries: selectedIndustries.value
-      }
-    })
-    console.log(response)
-    if (response.status === 200) {
+    const requests = selectedIndustries.value.map(industryId => {
+      return request.post('/publish/send', null, {
+        headers: {
+          ...accessHeader()
+        },
+        params: {
+          surveyId: currentQuestionnaire.value.id,
+          industryId: industryId,
+          required: true
+        }
+      });
+    });
+    const responses = await Promise.all(requests);
+    // 检查所有响应状态
+    const allSuccess = responses.every(response => response.status === 200);
+    if (allSuccess) {
       ElMessage.success('问卷分发成功!')
     } else {
       ElMessage.error('问卷分发失败!')
@@ -325,10 +328,10 @@ const searchQuestionnaires = () => {
               </el-checkbox>
             </template>
             <el-option
-                v-for="item in industries"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                v-for="industry in industries"
+                :key="industry.value"
+                :label="industry.label"
+                :value="industry.value"
             />
           </el-select>
           <el-button type="primary" @click="handleDistribute">分发问卷</el-button>
