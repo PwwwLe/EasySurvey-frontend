@@ -22,7 +22,7 @@ const updateOption = (index, event) => {
 };
 
 const addOption = () => {
-  localQuestion.value.options.push({ text: '', line_num: localQuestion.value.options.length + 1 });
+  localQuestion.value.options.push({id:-Date.now(), text: '', line_num: localQuestion.value.options.length + 1 });
   emits('update-question', localQuestion.value);
 };
 

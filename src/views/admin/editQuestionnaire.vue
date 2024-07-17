@@ -10,6 +10,7 @@ import { takeAccessToken } from "@/net";
 
 const router = useRouter();
 const route = useRoute();
+const surveyself = ref(null);
 const surveyData = ref({
   title: '',
   description: '',
@@ -22,38 +23,40 @@ const surveyData = ref({
 });
 const dateRange = ref([])
 
-const loadSurvey = async (surveyId) => {
+const loadSurvey = async (survey) => {
   try {
+    surveyData.value.title = survey.title;
+    surveyData.value.description = survey.description;
+    surveyData.value.start_time = new Date(survey.startTime);
+    surveyData.value.end_time = new Date(survey.endTime);
+    dateRange.value = [new Date(survey.startTime), new Date(survey.endTime)];
     const response = await request.get('/option/getAllOptionsStructureBySurveyId', {
       headers: {
         'Authorization': `Bearer ${takeAccessToken()}`,
       },
       params: {
-        surveyId: surveyId,
+        surveyId: survey.id,
       }
     });
-    const survey = response.data.data;
-    console.log(survey)
-
-    surveyData.value.title = survey.title;
-    surveyData.value.description = survey.description;
-    surveyData.value.start_time = new Date(survey.start_time);
-    surveyData.value.end_time = new Date(survey.end_time);
-    dateRange.value = [new Date(survey.start_time), new Date(survey.end_time)];
-    surveyData.value.questions = survey.questions.map((question, index) => ({
+    console.log(response)
+    const questions = response.data.data;
+    console.log(questions);
+    surveyData.value.questions = questions.map((question, index) => ({
       ...question,
+      options: question.optionVos, // 将 optionVos 重命名为 options
       isEditing: false,
     }));
+    console.log(surveyData.value.questions);
   } catch (error) {
     ElMessage.error('加载问卷内容时出错，请重试');
   }
 };
 
 onMounted(() => {
-  const surveyId = route.params.questionnaireId;
-  console.log(surveyId)
-  if (surveyId) {
-    loadSurvey(surveyId);
+  surveyself.value = JSON.parse(route.params.questionnaire);
+  console.log(surveyself.value)
+  if (surveyself.value) {
+    loadSurvey(surveyself.value);
   }
 });
 
@@ -65,9 +68,11 @@ watch(dateRange, (newVal) => {
   }
 });
 
-// 修改添加问题函数中的type值
+// 添加新问题时生成临时ID（负数）
 const addQuestion = (type) => {
+  const tempId = -Date.now(); // 生成负数的临时ID
   const newQuestion = {
+    id: tempId, // 负数的临时ID
     type,
     title: '',
     line_num: surveyData.value.questions.length + 1,
@@ -77,8 +82,8 @@ const addQuestion = (type) => {
   };
 
   if (type === 1 || type === 2 || type === 4 || type === 5) {
-    newQuestion.options.push({ text: '', line_num: 1 });
-    newQuestion.options.push({ text: '', line_num: 2 });
+    newQuestion.options.push({ id: tempId - 1, text: '', line_num: 1 });
+    newQuestion.options.push({ id: tempId - 2, text: '', line_num: 2 });
   }
 
   surveyData.value.questions.push(newQuestion);
@@ -87,7 +92,6 @@ const addQuestion = (type) => {
 const updateQuestion = (index, updatedQuestion) => {
   surveyData.value.questions[index] = updatedQuestion;
   console.log(surveyData.value);
-  console.log(value2)
 };
 
 const deleteQuestion = (index) => {
@@ -142,29 +146,35 @@ const submitSurvey = async () => {
     return;
   }
 
-  try {
-    console.log("创建问卷")
-    console.log(surveyData.value)
-    // 创建问卷
-    const surveyResponse = await request.post('/survey/createSurvey', {
-      title: surveyData.value.title,
-      description: surveyData.value.description,
-      startTime: surveyData.value.start_time,
-      endTime: surveyData.value.end_time,
-      status: surveyData.value.status,
-      owner_id: surveyData.value.owner_id,
-      modified: surveyData.value.modified,
-    },{headers: {
-        'Authorization': `Bearer ${takeAccessToken()}`,
-        'Content-Type': 'application/json'
-      }});
-      console.log(surveyResponse);
+  const surveyId = surveyself.value.id;
+  console.log(surveyId)
 
-    const surveyId = surveyResponse.data.id;
-    console.log(surveyId)
+  // try {
+    if (surveyId) {
+      // 更新问卷
+      await request.put(`/survey/updateSurvey`, {
+        id: surveyId,
+        title: surveyData.value.title,
+        description: surveyData.value.description,
+        startTime: surveyData.value.start_time,
+        endTime: surveyData.value.end_time,
+        status: surveyData.value.status,
+        owner_id: surveyData.value.owner_id,
+        modified: surveyData.value.modified,
+        questions: surveyData.value.questions,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${takeAccessToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+    // const surveyId = surveyself.value.id;
+    // console.log(surveyId);
 
     // 构建问题列表
     const questions = surveyData.value.questions.map((question, index) => ({
+      id: question.id < 0 ? question.id % 2147483648 : question.id, // 确保ID在范围内
       surveyId: surveyId,
       type: question.type,
       title: question.title,
@@ -172,58 +182,99 @@ const submitSurvey = async () => {
       required: question.required,
     }));
 
-    // 创建问题
-    const questionResponse = await request.post('/question/createQuestions',
-      questions
-    ,{headers: {
-        'Authorization': `Bearer ${takeAccessToken()}`,
-        'Content-Type': 'application/json'
-      }});
+    // 更新问题
+    const questionResponse = await request.put('/question/updateQuestions',
+      questions, {
+        headers: {
+          'Authorization': `Bearer ${takeAccessToken()}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-    console.log(questionResponse)
+    console.log(questionResponse);
 
     // 获取创建的问题ID
-    const createdQuestions = questionResponse.data.ids;
-    console.log(createdQuestions)
+    const updateQueations = questionResponse.data.data;
+    console.log(updateQueations);
 
     // 构建选项列表
     const options = [];
     surveyData.value.questions.forEach((question, index) => {
-      const questionId = createdQuestions[index].id;
+      const questionId = updateQueations[index];
       question.options.forEach((option, optionIndex) => {
         options.push({
-          question_id: questionId,
+          id: option.id < 0 ? option.id % 2147483648 : option.id, // 确保ID在范围内
+          questionId: questionId,
           text: option.text,
           line_num: optionIndex + 1,
         });
       });
     });
 
-    // 创建选项
+    // 更新选项
     if (options.length > 0) {
-      
-      const optionResponse = await request.post('/option/addOptions', 
-        options
-      ,{headers: {
-        'Authorization': `Bearer ${takeAccessToken()}`,
-        'Content-Type': 'application/json'
-      }});
-      console.log("你好")
-      console.log(optionResponse.data)
+      const optionResponse = await request.put('/option/updateOptions',
+        options, {
+          headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      console.log(options)
+      console.log("你好");
+      console.log(optionResponse.data);
     }
-    
-    
+
+
+    // } else {
+    //   // 创建新问卷
+    //   const surveyResponse = await request.post('/survey/createSurvey', {
+    //     title: surveyData.value.title,
+    //     description: surveyData.value.description,
+    //     startTime: surveyData.value.start_time,
+    //     endTime: surveyData.value.end_time,
+    //     status: surveyData.value.status,
+    //     owner_id: surveyData.value.owner_id,
+    //     modified: surveyData.value.modified,
+    //   }, {
+    //     headers: {
+    //       'Authorization': `Bearer ${takeAccessToken()}`,
+    //       'Content-Type': 'application/json'
+    //     }
+    //   });
+
+    //   const surveyId = surveyResponse.data.id;
+
+    //   const questions = surveyData.value.questions.map((question, index) => ({
+    //     surveyId: surveyId,
+    //     type: question.type,
+    //     title: question.title,
+    //     line_num: index + 1,
+    //     required: question.required,
+    //   }));
+
+    //   await request.post('/question/createQuestions', questions, {
+    //     headers: {
+    //       'Authorization': `Bearer ${takeAccessToken()}`,
+    //       'Content-Type': 'application/json'
+    //     }
+    //   });
+    }
 
     ElMessage({
-      message: '问卷发布成功！',
+      message: surveyId ? '问卷更新成功！' : '问卷发布成功！',
       type: 'success',
     });
 
     router.go(-1);
-  } catch (error) {
-    ElMessage.error('发布问卷时出错，请重试');
-  }
+  // } 
+  // catch (error) {
+  //   ElMessage.error(surveyId ? '更新问卷时出错，请重试' : '发布问卷时出错，请重试');
+  // }
 };
+
 
 
 // 处理编辑事件
