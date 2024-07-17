@@ -5,6 +5,7 @@ import {login, get, post, Register, getInfo} from "@/net";
 import {ElMessage} from "element-plus";
 import router from "@/router";
 import axios from "axios";
+import loadingService from "@/services/loadingService.js";
 
 // 登录方面
 const loginForm = reactive({
@@ -30,15 +31,18 @@ const loginFormRef = ref()
 function userLogin() {
   loginFormRef.value.validate((isValid) => {
     if (isValid) {
+      loadingService.showLoading('正在登录...')
       login(loginForm.username, loginForm.password, loginForm.role, () => {
         getInfo((data) => {
           console.log(data)
           if (data.user.role == 0)
             router.push('/user').then(() => {
+              loadingService.hideLoading()
               location.reload();
             });
           else
             router.push('/admin').then(() => {
+              loadingService.hideLoading()
               location.reload();
             });
         })
@@ -109,10 +113,13 @@ const register = async () => {
   registerFormRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        loadingService.showLoading('正在注册...')
         await Register(registerForm.username, registerForm.password, registerForm.code, uuid.value);
         await router.push("/");
+        loadingService.hideLoading()
         switchToLogin();
       } catch (error) {
+        loadingService.hideLoading()
         console.error('注册失败：', error);
       }
     } else {
@@ -181,7 +188,7 @@ const getCaptcha = async () => {
               <el-input v-model="registerForm.code" maxlength="20" placeholder="输入验证码">
                 <template #prefix>
                   <el-icon>
-                    <CircleCheck />
+                    <CircleCheck/>
                   </el-icon>
                 </template>
               </el-input>

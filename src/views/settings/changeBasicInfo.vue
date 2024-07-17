@@ -1,13 +1,14 @@
 <script setup>
 import {reactive, ref, onMounted} from "vue";
 import {accessHeader, get, patch, post, UploadImage} from "@/net";
-import {ElMessage} from "element-plus";
+import {ElLoading, ElMessage} from "element-plus";
 import router from "@/router";
 import {ElCard, ElRow, ElCol, ElButton, ElInput, ElSelect, ElOption, ElUpload} from 'element-plus';
 
 
 import {Plus} from '@element-plus/icons-vue'
 import axios from "axios";
+import loadingService from "@/services/loadingService.js";
 
 const id = ref(0);
 
@@ -51,6 +52,7 @@ onMounted(async () => {
 })
 
 function saveInfo() {
+  loadingService.showLoading('正在保存信息...')
   patch(
       '/api/user/updateBaseInfo',
       {industryIds: editData.industry}, // 将 industry 作为 query 参数传递
@@ -61,12 +63,14 @@ function saveInfo() {
         businessScope: editData.businessScope
       },
       () => {
+        loadingService.hideLoading()
         ElMessage.success('基本资料修改成功！');
         router.push('/user/basicInfo').then(() => {
           location.reload();
         });
       },
       (error) => {
+        loadingService.hideLoading()
         console.error('Patch request failed:', error);
         ElMessage.error('基本资料修改失败，请重试');
       }
