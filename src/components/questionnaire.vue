@@ -46,7 +46,7 @@ const getProgress = async () => {
         surveyId: props.questionnaire.id
       }
     })
-    percentage.value = response.data.data * 100
+    percentage.value = parseFloat((response.data.data * 100).toFixed(2))
   } catch (error) {
     console.error('获取填写进度失败: ', error)
   }
