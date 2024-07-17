@@ -109,9 +109,7 @@ const register = async () => {
   registerFormRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        // todo 测试验证码逻辑
         await Register(registerForm.username, registerForm.password, registerForm.code, uuid.value);
-        // await Register(registerForm.username, registerForm.password);
         await router.push("/");
         switchToLogin();
       } catch (error) {

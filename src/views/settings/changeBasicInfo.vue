@@ -23,7 +23,11 @@ const editData = reactive({
 const industries = ref([])
 const fetchIndustries = async () => {
   try {
-    const response = await axios.get('/api/user/getAllIndustry')
+    const response = await axios.get('/api/user/getAllIndustry', {
+      headers: {
+        ...accessHeader()
+      }
+    })
     if (response.status === 200) {
       industries.value = response.data.data.map(item => ({label: item.name, value: String(item.id)}))
     } else {

@@ -24,7 +24,7 @@ const myUserId = ref(0);
 get("/api/user/userInfo", (data) => {
     console.log(data)
     myUserId.value = data.user.id;
-    getByUserId('25', (data) => {
+    getByUserId(data.user.id, (data) => {
         console.log(data)
         console.log(data.data)
         //getByUserId(data.user.id, (data) => {
