@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { ElMessage } from "element-plus";
+import {ElMessage} from "element-plus";
 
 const authItemName = "access_token"
 
@@ -27,7 +27,7 @@ function internalPost(url, queryParams, data, header, success, failure, error = 
     const fullUrl = `${url}?${queryString}`;
 
     console.log(fullUrl)
-    axios.post(fullUrl, data, { headers: header }).then(({ data }) => {
+    axios.post(fullUrl, data, {headers: header}).then(({data}) => {
         console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -40,7 +40,7 @@ function internalPost(url, queryParams, data, header, success, failure, error = 
 function internalGet(url, header, success, failure, error = defaultError) {
     //console.log(url)
     //console.log(header)
-    axios.get(url, { headers: header }).then(({ data }) => {
+    axios.get(url, {headers: header}).then(({data}) => {
         //console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -55,7 +55,7 @@ function internalPut(url, data, header, success, failure, error = defaultError) 
     console.log(data)
     console.log(header)
 
-    axios.put(url, data, { headers: header }).then(({ data }) => {
+    axios.put(url, data, {headers: header}).then(({data}) => {
         console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -96,7 +96,7 @@ function internalPatch(url, queryParams, data, header, success, failure, error =
 
     console.log(fullUrl)
 
-    axios.patch(fullUrl, data, { headers: header }).then(({ data }) => {
+    axios.patch(fullUrl, data, {headers: header}).then(({data}) => {
         console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -111,7 +111,7 @@ function internalDelete(url, header, success, failure, error = defaultError) {
     console.log(url)
     console.log(header)
 
-    axios.delete(url, { headers: header }).then(({ data }) => {
+    axios.delete(url, {headers: header}).then(({data}) => {
         console.log(data)
         if (data.code === 1) {
             success(data.data)
@@ -123,7 +123,7 @@ function internalDelete(url, header, success, failure, error = defaultError) {
 
 
 function storeAccessToken(token, expire) {
-    const authObj = { token: token, expire: expire }
+    const authObj = {token: token, expire: expire}
     const str = JSON.stringify(authObj);
     localStorage.setItem(authItemName, str)
     console.log(localStorage.getItem(authItemName))
@@ -155,7 +155,7 @@ function login(username, password, role, success, failure = defaultFailure) {
         headers: {
             'Content-Type': 'application/json'
         }
-    }).then(({ data }) => {
+    }).then(({data}) => {
         console.log(data)
         console.log(role)
 
@@ -172,6 +172,7 @@ function login(username, password, role, success, failure = defaultFailure) {
     }).catch(err => failure(err))
 }
 
+/* todo 测试验证码逻辑
 const Register = async (username, password, code, uuid, success, failure = defaultFailure) => {
     // console.log(username)
     // console.log(password)
@@ -198,6 +199,27 @@ const Register = async (username, password, code, uuid, success, failure = defau
         console.log('注册出现错误：', error)
     }
 }
+*/
+const Register = async (username, password) => {
+    try {
+        const response = await axios.post('/api/register', {
+            username: username,
+            password: password,
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log(response)
+        if (response.status === 200) {
+            ElMessage.success('注册成功，欢迎加入！')
+        } else {
+            ElMessage.error('注册失败！')
+        }
+    } catch (error) {
+        console.error('注册时错误：', error)
+    }
+}
 
 function UploadImage(url, queryParams, data, success, failure = defaultFailure) {
     console.log(url);
@@ -212,7 +234,7 @@ function UploadImage(url, queryParams, data, success, failure = defaultFailure) 
         byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: 'image/png' }); // 假设 PNG 图片
+    const blob = new Blob([byteArray], {type: 'image/png'}); // 假设 PNG 图片
 
     const formData = new FormData();
     formData.append('file', blob, 'image.png'); // 附加上述 Blob，使用一个文件名
@@ -227,7 +249,7 @@ function UploadImage(url, queryParams, data, success, failure = defaultFailure) 
 
     // 发送请求
     axios.post(url, formData, config)
-        .then(({ data }) => {
+        .then(({data}) => {
             console.log(data);
             if (data.code === 1) {
                 ElMessage.success('上传成功');
@@ -255,7 +277,7 @@ function updateAvatar(avatarUrl, failure = defaultFailure) {
     };
 
     axios.patch(fullUrl, null, config)
-        .then(({ data }) => {
+        .then(({data}) => {
             console.log(data);
             if (data.code === 1) {
 
@@ -284,7 +306,7 @@ function getImage(avatarUrl, success, failure = defaultError) {
     };
 
     axios.get(fullUrl, config)
-        .then(({ data }) => {
+        .then(({data}) => {
             //console.log(data);
             if (data.code === 1) {
                 success(data)
@@ -307,7 +329,7 @@ function getInfo(success, failure = defaultFailure) {
     };
 
     axios.get('/api/getInfo', config)
-        .then(({ data }) => {
+        .then(({data}) => {
             console.log(data);
             if (data.code === 200) {
                 success(data);
@@ -318,7 +340,7 @@ function getInfo(success, failure = defaultFailure) {
         .catch(err => failure(err));
 }
 
-function getByUserId(userId, success, failure = defaultFailure) {
+export function getByUserId(userId, success, failure = defaultFailure) {
     const queryParams = {
         userId: userId
     }
@@ -333,7 +355,7 @@ function getByUserId(userId, success, failure = defaultFailure) {
     };
 
     axios.get(fullUrl, config)
-        .then(({ data }) => {
+        .then(({data}) => {
             console.log(data);
             if (data.code === 1) {
                 success(data)
@@ -344,7 +366,7 @@ function getByUserId(userId, success, failure = defaultFailure) {
         .catch(err => failure(err));
 }
 
-function getSurvey(surveyId, success, failure = defaultFailure) {
+export function getSurvey(surveyId, success, failure = defaultFailure) {
     const queryParams = {
         surveyId: surveyId
     }
@@ -359,7 +381,7 @@ function getSurvey(surveyId, success, failure = defaultFailure) {
     };
 
     axios.get(fullUrl, config)
-        .then(({ data }) => {
+        .then(({data}) => {
             //console.log(data);
             if (data.code === 1) {
                 success(data)

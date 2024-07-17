@@ -52,6 +52,7 @@ const switchToLogin = () => {
 
 const switchToRegister = () => {
   isActive.value = true;
+  getCaptcha();
 };
 
 //注册方面
@@ -59,7 +60,7 @@ const registerForm = reactive({
   username: '',
   password: '',
   password_repeat: '',
-  code: ''
+  // code: ''
 })
 
 const registerFormRef = ref()
@@ -101,16 +102,21 @@ const registerRule = {
   ]
 }
 
-const register = () => {
-  registerFormRef.value.validate((valid) => {
+const register = async () => {
+  registerFormRef.value.validate(async (valid) => {
     if (valid) {
-      Register(registerForm.username, registerForm.password, registerForm.code.toString(), uuid.value.toString(), () => {
-        router.push("/")
-        switchToLogin()
-      })
+      try {
+        // todo 测试验证码逻辑
+        // await Register(registerForm.username, registerForm.password, registerForm.code, uuid.value);
+        await Register(registerForm.username, registerForm.password);
+        await router.push("/");
+        switchToLogin();
+      } catch (error) {
+        console.error('注册失败：', error);
+      }
     } else {
-      ElMessage.warning('请完整填写注册表单内容')
-      console.warn(`请完整填写注册表单内容`)
+      ElMessage.warning('请完整填写注册表单内容');
+      console.warn('请完整填写注册表单内容');
     }
   })
 }
@@ -121,7 +127,11 @@ const uuid = ref('')
 const getCaptcha = async () => {
   try {
     const response = await axios.get('/api/captchaImage')
-    console.log(response);
+    if (response.status === 200) {
+      console.log('验证码获取成功：', response)
+    } else {
+      console.error('验证码获取失败!')
+    }
     captchaImage.value = response.data.img
     uuid.value = response.data.uuid
   } catch (error) {
@@ -173,22 +183,21 @@ const getCaptcha = async () => {
                 </template>
               </el-input>
             </el-form-item>
+            <!--  todo 测试验证码
 
             <el-form-item>
-              <!--  验证码  -->
-              <el-input v-model="registerForm.code" maxlength="20" placeholder="输入验证码">
-                <template #prefix>
-                  <el-icon>
-                    <CircleCheck/>
-                  </el-icon>
-                </template>
-              </el-input>
-              <el-button type="primary" @click="getCaptcha">
-                获取验证码
-              </el-button>
-              <img v-if="captchaImage" :src="`data:image/png;base64,${captchaImage}`" alt="Captcha" @click="getCaptcha"
-                   style="cursor: pointer;"/>
+            <el-input v-model="registerForm.code" maxlength="20" placeholder="输入验证码">
+              <template #prefix>
+                <el-icon>
+                  <CircleCheck/>
+                </el-icon>
+              </template>
+            </el-input>
+            <img v-if="captchaImage" :src="`data:image/png;base64,${captchaImage}`" alt="Captcha" @click="getCaptcha"
+                 style="cursor: pointer;"/>
             </el-form-item>
+            -->
+
 
           </el-form>
           <div style="margin-top: 20px;">
