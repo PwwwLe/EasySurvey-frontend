@@ -1,20 +1,10 @@
-<!-- <script setup>
-
-</script>
-
-<template>
-    unfilledQuestionnaire
-</template>
-
-<style scoped></style> -->
-
 <script setup>
 import { useStore } from "@/store";
 import { computed, ref } from "vue";
 import Card from "@/components/Card.vue";
 import { Avatar } from "@element-plus/icons-vue";
 import QuestionnaireItem from "@/components/QuestionnaireItem.vue";
-import { get, post, getByUserId, getSurvey } from "@/net";
+import { get, post, getByUserId, getSurvey, createAnswers, createResponse } from "@/net";
 import { format } from "date-fns";
 import { useRouter } from 'vue-router';
 import { ElMessage } from "element-plus";
@@ -29,12 +19,15 @@ const questionnaireList = ref([]);
 const isWriting = ref(false); //开始填写问卷?
 
 const mySubmittedQuestionnaireList = ref([]);
+const myUserId = ref(0);
 
 get("/api/user/userInfo", (data) => {
     console.log(data)
+    myUserId.value = data.user.id;
     getByUserId('25', (data) => {
-        //getByUserId(data.user.id, (data) => {
         console.log(data)
+        console.log(data.data)
+        //getByUserId(data.user.id, (data) => {
         questionnaireList.value = data.data;
         console.log(questionnaireList)
     })
@@ -67,14 +60,21 @@ const findSubmitted = (id) => {
 const startWrite = async (item) => {
 
     console.log(item)
+    console.log(item.id)
     isWriting.value = true;
+
+    currentQuestionnaire.value = item;
+    console.log(currentQuestionnaire)
+    console.log(currentQuestionnaire.value.id)
 
     //getSurvey(item.id, (data) => {
     getSurvey(12, (data) => {
         console.log(data)
+        currentQuestionnaireDetails.value = data.data;
+        console.log(currentQuestionnaireDetails)
+        console.log(currentQuestionnaireDetails.value.id)
     })
-    // currentQuestionnaire.value = item;
-    // console.log(currentQuestionnaire)
+
 
     // // 获取问卷详情信息
     // await get(`api/questionnaire/questionnaireDetails/${item.id}`, data => {
@@ -101,49 +101,104 @@ const back = () => {
     answers.value = [];
 }
 
+const lineNumToLetter = (lineNum) => {
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    return letters[lineNum - 1] || null; // 确保 lineNum 在 1 到 20 之间
+}
+
+//保存问卷的函数
+// const storeAnswer = () => {
+
+// }
+
+
 // 提交问卷的函数
 const submitQuestionnaire = () => {
     const accountId = store.user.id; // 获取当前登录用户的id
-
+    const flag = 0
     // 判断是否至少填写了一个题目
-    if (currentQuestionnaireDetails.value.some(question => question.answer)) {
-        // 遍历每个题目的答案，封装成对象并添加到答案数组中
-        currentQuestionnaireDetails.value.forEach((question) => {
-            const { id: questionnaireId } = currentQuestionnaire.value;
-            const { id: questionnaireDetailsId, answer } = question;
+    //if (currentQuestionnaireDetails.value.some(question => question.answer)) {
+    // 遍历每个题目的答案，封装成对象并添加到答案数组中
+    currentQuestionnaireDetails.value.forEach((question) => {
+        if (flag == 1)
+            return;
+        console.log(question)
+        // const { id: questionnaireId } = currentQuestionnaire.value;
+        // const { id: questionnaireDetailsId, answer } = question;
 
-            // 将多选选项的答案拼接成字符串，使用&@@&分隔
-            const myAnswer =
-                question.type === 1 ? (answer || []).join('&@@&') : question.answer;
+        // // 将多选选项的答案拼接成字符串，使用&@@&分隔
+        // const myAnswer =
+        //     question.type === 2 ? (answer || []).join('&@@&') : question.answer;
 
-            // 创建一个包含题目答案信息的对象
+        // // 创建一个包含题目答案信息的对象
+        // const answerObject = {
+        //     questionnaire_details_id: questionnaireDetailsId,
+        //     myanswer: myAnswer,
+        // };
+        if (question.answer == null && question.required == true) {
+            ElMessage.warning("请将问卷填写完整后提交！")
+            flag = 1
+            return;
+        }
+
+        if (question.type == 1) {
             const answerObject = {
-                questionnaire_details_id: questionnaireDetailsId,
-                myanswer: myAnswer,
-            };
-
-            // 将答案对象添加到答案数组中
+                userId: myUserId.value,
+                questionId: question.id,
+                optionId: question.answer.id,
+                textAnswer: lineNumToLetter(question.answer.lineNum)
+            }
             answers.value.push(answerObject);
-        });
+        }
+        else if (question.type == 2) {
 
-        // 在控制台打印答案数组，用于测试
-        // console.log(answers.value);
-        const requestData = {
-            voList: answers.value,
-            accountId: accountId,
-            questionnaireId: currentQuestionnaire.value.id
-        };
+        }
+        else if (question.type == 3) {
+            const answerObject = {
+                userId: myUserId.value,
+                questionId: question.id,
+                optionId: question.optionVos[0].id,
+                textAnswer: question.answer
+            }
+            answers.value.push(answerObject);
+        }
 
-        post(`/api/answer/submitAnswer`, requestData, () => {
-            ElMessage.success("提交成功!");
+        // 将答案对象添加到答案数组中
+        //answers.value.push(answerObject);
+    });
+
+    // 在控制台打印答案数组，用于测试
+    console.log(answers)
+    console.log(answers.value);
+
+    // 提取实际值并转换为 JSON 字符串
+    const actualValues = answers.value.map(item => ({ ...item }));
+    const jsonList = JSON.stringify(actualValues, null, 2);
+
+    console.log(actualValues);
+    console.log(jsonList);
+
+    createAnswers(jsonList, (data) => {
+        console.log(data);
+        const response = {
+            //userId: myUserId.value,
+            userId: 57,
+            surveyId: currentQuestionnaire.value.id,
+            isSubmit: true
+        }
+        const jsonResponse = JSON.stringify(response);
+        console.log(jsonResponse);
+        createResponse(jsonResponse, (data) => {
+            console.log(data);
         })
+    })
 
 
-        //TODO 清空answer
-        answers.value = [];
-    } else {
-        ElMessage.warning("请至少填写一个题目");
-    }
+    //TODO 清空answer
+    answers.value = [];
+    // } else {
+    //     ElMessage.warning("请至少填写一个题目");
+    //}
 };
 
 </script>
@@ -165,35 +220,40 @@ const submitQuestionnaire = () => {
                     </div>
                 </div>
             </card>
-            <!-- <card :title="currentQuestionnaire.name" :icon="Avatar" :desc="currentQuestionnaire.desc" v-if="isWriting">
+            <card :title="currentQuestionnaire.title" :icon="Avatar" :desc="currentQuestionnaire.description"
+                v-if="isWriting">
                 <template v-if="currentQuestionnaireDetails && currentQuestionnaireDetails.length > 0">
                     <div v-for="(question, index ) in currentQuestionnaireDetails" :key="index">
-                        <div>{{ question.desc }}</div>
-                        <template v-if="question.type === 0">
-                            <el-radio-group v-model="question.answer" class="questionnaire-details-item">
-                                <el-radio :label="option"
-                                    v-for="(option, optionIndex) in question.options.split('&$$&')"
-                                    :key="optionIndex">{{ option }}</el-radio>
+                        <span v-if="question.required" class="required-asterisk">*</span>
+                        <span>{{ index + 1 }}. {{ question.title }}</span>
+                        <br>
+                        <template v-if="question.type === 1">
+                            <el-radio-group v-model="question.answer" class="questionnaire-details-item"
+                                style="display: flex; flex-wrap: wrap;">
+                                <el-radio :label="option" v-for="(option, optionIndex) in question.optionVos"
+                                    :key="optionIndex">{{ option.text }}</el-radio>
                             </el-radio-group>
                         </template>
-<template v-else-if="question.type === 1">
+                        <template v-else-if="question.type === 2">
                             <el-checkbox-group v-model="question.answer" class="questionnaire-details-item">
-                                <el-checkbox :label="option"
-                                    v-for="(option, optionIndex) in question.options.split('&$$&')"
-                                    :key="optionIndex">{{ option }}</el-checkbox>
+                                <el-checkbox :label="option" v-for="(option, optionIndex) in question.optionVos"
+                                    :key="optionIndex">{{ option.text }}</el-checkbox>
                             </el-checkbox-group>
                         </template>
-<template v-else-if="question.type === 2" class="questionnaire-details-item">
-                            <el-input v-model="question.answer" placeholder="请输入文本"></el-input>
+                        <template v-else-if="question.type === 3">
+                            <el-input v-model="question.answer" placeholder="请输入文本" style="max-width: 900px;"
+                                class="questionnaire-details-item"></el-input>
                         </template>
-</div>
-</template>
-<template else>
+                    </div>
+                </template>
+                <template else>
                     <div>暂无题目</div>
                 </template>
-<el-button type="primary" @click="submitQuestionnaire" class="questionnaire-details-item">提交问卷</el-button>
-<el-button type="primary" @click="back" class="questionnaire-details-item">返回</el-button>
-</card> -->
+                <el-button type="primary" @click="back" class="questionnaire-details-item">返回</el-button>
+                <!-- <el-button type="primary" @click="storeAnswer" class="questionnaire-details-item">保存</el-button> -->
+                <el-button type="primary" @click="submitQuestionnaire"
+                    class="questionnaire-details-item">提交问卷</el-button>
+            </card>
         </div>
     </div>
 
@@ -219,6 +279,12 @@ const submitQuestionnaire = () => {
 }
 
 .questionnaire-details-item {
-    margin: 5px 5px 5px 5px;
+    margin: 10px 5px 10px 5px;
+    /* margin-top: 100px; */
+}
+
+.required-asterisk {
+    color: red;
+    margin-right: 5px;
 }
 </style>
