@@ -9,6 +9,10 @@ const props = defineProps({
   questionnaire: {
     type: Object,
     required: true
+  },
+  isPublished: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -53,7 +57,7 @@ const getProgress = async () => {
 }
 
 onMounted(() => {
-  getProgress()
+    getProgress()
 })
 </script>
 
@@ -63,6 +67,8 @@ onMounted(() => {
       <div class="card-header">
         <div class="head-left">
           <el-text style="font-size: larger">{{ questionnaire.title }}</el-text>
+          <el-tag v-if="isPublished" type="success">已发布</el-tag>
+          <el-tag v-else type="info">未发布</el-tag>
         </div>
         <div class="head-right">
           <div class="time">
@@ -71,9 +77,10 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      <div class="head-progress">
+      <div class="head-progress" v-show="isPublished">
         <el-text type="info" size="large">填写进度</el-text>
-        <el-progress :text-inside="true" :stroke-width="26" :percentage="percentage" class="progress-bar"/>
+        <el-progress :text-inside="true" :stroke-width="26" :percentage="percentage"
+                     class="progress-bar"/>
       </div>
 
     </template>

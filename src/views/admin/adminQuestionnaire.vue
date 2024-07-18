@@ -15,7 +15,6 @@ let count = ref(1)
 
 const fetchQuestionnaires = async () => {
   try {
-    console.log("第二次count:" + count.value);
     const response = await request.get('/survey/getSeveral', {
       headers: {
         ...accessHeader()
@@ -24,15 +23,27 @@ const fetchQuestionnaires = async () => {
         count: count.value.toString()
       }
     });
-
-    console.log("count:" + count.value);
-    console.log(response);
-
     questionnaires.length = 0;
-    const data = response.data.data || [];  // 增加对空值的判断
+    const data = response.data.data || [];
+    for (const item of data) {
+      try {
+        const isPublishedResponse = await axios.get('/api/publish/isPublished', {
+          headers: {
+            ...accessHeader()
+          },
+          params: {
+            surveyId: item.id
+          }
+        })
+        item.isPublished = isPublishedResponse.data.data
+      }catch (error) {
+        console.error('Error fetching isPublished:', error);
+      }
+    }
     questionnaires.push(...data.map(item => {
       return {
         ...item,
+        isPublished: item.isPublished,
         startTime: item.startTime ? formatDateTime(item.startTime) : item.startTime,
         endTime: item.endTime ? formatDateTime(item.endTime) : item.endTime,
       }
@@ -53,7 +64,6 @@ const fetchIndustries = async () => {
         ...accessHeader()
       }
     })
-    console.log(response)
     if (response.status === 200) {
       industries.value = response.data.data.map(item => ({label: item.name, value: String(item.id)}))
     } else {
@@ -71,10 +81,10 @@ const fetchDistributedIndustries = async () => {
         ...accessHeader()
       }
     })
-    console.log('getAll 返回的 response： ', response)
     if (response.status === 200) {
       publish.value = response.data.data
-      console.log('publish: ', publish)
+    } else {
+      console.warn('返回状态出错!')
     }
   } catch (error) {
     console.error('获取已分发行业信息出错：', error)
@@ -109,7 +119,6 @@ const navigateToCreateQuestionnaire = () => {
 
 //编辑逻辑
 const handleEdit = (questionnaire) => {
-  // console.log('Edit:', questionnaire)
   router.push({name: 'editQuestionnaire', params: {questionnaire: JSON.stringify(questionnaire)}});
 }
 
@@ -120,7 +129,6 @@ const currentQuestionnaire = ref(null);
 const publish = ref([])
 
 const handleShare = (questionnaire) => {
-  console.log('Share:', questionnaire)
   currentQuestionnaire.value = questionnaire
   shareDrawerVisible.value = true
 }
@@ -209,9 +217,14 @@ const handleDistribute = async () => {
 
     if (allSuccess) {
       ElMessage.success('问卷分发成功!');
+      console.log(currentQuestionnaire.value)
+      const index = questionnaires.findIndex(q => q.id === currentQuestionnaire.value.id);
+      if (index !== -1) {
+        questionnaires[index].isPublished = true;
+      }
       setTimeout(() => {
         location.reload();
-      }, 500);
+      }, 200);
     } else {
       const failedRequests = responses.filter(response => response.status === 'rejected' || (response.status === 'fulfilled' && response.value.status !== 200));
       console.error('分发失败的请求: ', failedRequests);
@@ -340,6 +353,7 @@ const searchQuestionnaires = () => {
           v-for="item in questionnaires"
           :key="item.id"
           :questionnaire="item"
+          :isPublished="item.isPublished"
           @edit="handleEdit($event)"
           @share="handleShare"
           @download="handleDownload"
