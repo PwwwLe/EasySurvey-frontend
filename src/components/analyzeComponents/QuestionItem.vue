@@ -88,7 +88,7 @@ onMounted(() => {
   })
 })
 
-const activeTab = ref('chartView');
+const activeTab = ref('listView');
 </script>
 
 <template>
@@ -111,21 +111,17 @@ const activeTab = ref('chartView');
     </div>
     <el-tabs v-model="activeTab" class="tabs">
       <el-tab-pane label="扇形图" name="listView">
-        <div v-for="(question, index) in questionnaireResults" :key="index">
-          <div ref="pieCharts" :style="{ width: '600px', height: '400px' }"></div>
+        <div v-for="(question, index) in questionnaireResults" :key="index" class="chart-container">
+          <div ref="pieCharts" class="chart" :style="{ width: '600px', height: '400px' }"></div>
         </div>
       </el-tab-pane>
       <el-tab-pane label="柱状图" name="chartView">
-        <div v-for="(question, index) in questionnaireResults" :key="index">
-          <div ref="barCharts" :style="{ width: '600px', height: '400px' }"></div>
+        <div v-for="(question, index) in questionnaireResults" :key="index" class="chart-container">
+          <div ref="barCharts" class="chart" :style="{ width: '600px', height: '400px' }"></div>
         </div>
       </el-tab-pane>
-      <!-- <el-tab-pane label="详情展示" name="detailView">
-        <div class="detail-view">
-          <p>详情展示内容</p>
-        </div>
-      </el-tab-pane> -->
     </el-tabs>
+
   </div>
 </template>
 
@@ -215,4 +211,21 @@ const activeTab = ref('chartView');
   text-align: center;
   margin: 5px 0;
 }
+
+.tabs {
+  display: flex;
+  justify-content: center;
+}
+
+.chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.chart {
+  margin: auto; /* 让图表在容器中居中 */
+}
+
 </style>
