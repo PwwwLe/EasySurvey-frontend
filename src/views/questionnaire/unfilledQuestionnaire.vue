@@ -6,10 +6,12 @@ import { Avatar } from "@element-plus/icons-vue";
 import QuestionnaireItem from "@/components/QuestionnaireItem.vue";
 import { get, post, getByUserId, getSurvey, createAnswers, createResponse, getAnswerOfSurveyByUserId } from "@/net";
 import { format } from "date-fns";
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const route = useRoute();
+const surveyId = route.params.surveyId;
 
 const store = useStore();
 const registerTime = computed(() => new Date(store.user.registerTime).toLocaleString());
@@ -110,7 +112,6 @@ const lineNumToLetter = (lineNum) => {
 
 // 提交问卷的函数
 const submitQuestionnaire = () => {
-    const accountId = store.user.id; // 获取当前登录用户的id
     const flag = 0
     // 判断是否至少填写了一个题目
     //if (currentQuestionnaireDetails.value.some(question => question.answer)) {

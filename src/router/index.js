@@ -110,7 +110,7 @@ const router = createRouter({
             component: () => import('@/views/admin/adminSearchQuestionnaire.vue')
         },
         {
-            path:"/editQuestionnaire/:questionnaire",
+            path: "/editQuestionnaire/:questionnaire",
             name: "editQuestionnaire",
             component: () => import('@/views/admin/editQuestionnaire.vue')
         }
