@@ -273,8 +273,9 @@ const handleDelete = async (questionnaire) => {
 
 // 提醒问卷逻辑
 const handleRemind = async (questionnaire) => {
-  console.log('Remind:', questionnaire)
   questionnaire.status = 1;
+  console.log('Remind:', questionnaire)
+  
   await request.put("/survey/updateSurvey", questionnaire, {
     headers: {
       'Authorization': `Bearer ${takeAccessToken()}`,

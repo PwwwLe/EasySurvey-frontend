@@ -33,6 +33,7 @@ const loadSurvey = async (survey) => {
     const response = await request.get('/option/getAllOptionsStructureBySurveyId', {
       headers: {
         'Authorization': `Bearer ${takeAccessToken()}`,
+        'Content-Type': 'application/json'
       },
       params: {
         surveyId: survey.id,
@@ -207,7 +208,7 @@ const submitSurvey = async () => {
           id: option.id < 0 ? option.id % 2147483648 : option.id, // 确保ID在范围内
           questionId: questionId,
           text: option.text,
-          line_num: optionIndex + 1,
+          lineNum: optionIndex + 1,
         });
       });
     });
