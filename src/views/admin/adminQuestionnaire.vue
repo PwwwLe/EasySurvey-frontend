@@ -15,7 +15,6 @@ let count = ref(1)
 
 const fetchQuestionnaires = async () => {
   try {
-    console.log("第二次count:" + count.value);
     const response = await request.get('/survey/getSeveral', {
       headers: {
         ...accessHeader()
@@ -24,15 +23,27 @@ const fetchQuestionnaires = async () => {
         count: count.value.toString()
       }
     });
-
-    console.log("count:" + count.value);
-    console.log(response);
-
     questionnaires.length = 0;
-    const data = response.data.data || [];  // 增加对空值的判断
+    const data = response.data.data || [];
+    for (const item of data) {
+      try {
+        const isPublishedResponse = await axios.get('/api/publish/isPublished', {
+          headers: {
+            ...accessHeader()
+          },
+          params: {
+            surveyId: item.id
+          }
+        })
+        item.isPublished = isPublishedResponse.data.data
+      }catch (error) {
+        console.error('Error fetching isPublished:', error);
+      }
+    }
     questionnaires.push(...data.map(item => {
       return {
         ...item,
+        isPublished: item.isPublished,
         startTime: item.startTime ? formatDateTime(item.startTime) : item.startTime,
         endTime: item.endTime ? formatDateTime(item.endTime) : item.endTime,
       }
@@ -48,7 +59,11 @@ const fetchQuestionnaires = async () => {
 
 const fetchIndustries = async () => {
   try {
-    const response = await axios.get('/api/user/getAllIndustry')
+    const response = await axios.get('/api/user/getAllIndustry', {
+      headers: {
+        ...accessHeader()
+      }
+    })
     if (response.status === 200) {
       industries.value = response.data.data.map(item => ({ label: item.name, value: String(item.id) }))
     } else {
@@ -56,6 +71,23 @@ const fetchIndustries = async () => {
     }
   } catch (error) {
     console.error('获取行业信息出错：', error)
+  }
+}
+
+const fetchDistributedIndustries = async () => {
+  try {
+    const response = await axios.get('/api/publish/getAll', {
+      headers: {
+        ...accessHeader()
+      }
+    })
+    if (response.status === 200) {
+      publish.value = response.data.data
+    } else {
+      console.warn('返回状态出错!')
+    }
+  } catch (error) {
+    console.error('获取已分发行业信息出错：', error)
   }
 }
 
@@ -86,22 +118,18 @@ const navigateToCreateQuestionnaire = () => {
 }
 
 //编辑逻辑
-const handleEdit = (id) => {
-  console.log('Edit:', id)
-  router.push({ name: 'editQuestionnaire', params: { questionnaireId: id } }).then(() => {
-    location.reload();
-  });
+const handleEdit = (questionnaire) => {
+  router.push({name: 'editQuestionnaire', params: {questionnaire: JSON.stringify(questionnaire)}});
 }
 
 const shareDrawerVisible = ref(false)
 const shareLink = ref('')
 const qrCode = ref('')
 const currentQuestionnaire = ref(null);
+const publish = ref([])
 
 const handleShare = (questionnaire) => {
-  console.log('Share:', questionnaire)
   currentQuestionnaire.value = questionnaire
-  // todo 转发问卷逻辑
   shareDrawerVisible.value = true
 }
 
@@ -151,30 +179,63 @@ const handleCheckAll = () => {
 
 const handleDistribute = async () => {
   try {
-    const requests = selectedIndustries.value.map(industryId => {
-      return request.post('/publish/send', null, {
+    await fetchDistributedIndustries();
+
+    const industriesToDistribute = ref(
+        selectedIndustries.value.filter(industryId => {
+          return !publish.value.some(p => p.surveyId == currentQuestionnaire.value.id && p.industryId == industryId);
+        })
+    );
+
+    if (industriesToDistribute.value.length === 0) {
+      ElMessage.info('所有选定的行业已经分发过问卷，无需重复分发');
+      return;
+    }
+
+    const requests = industriesToDistribute.value.map(industryId => {
+      return request.post('/publish/send', {
+        surveyId: currentQuestionnaire.value.id,
+        industryId: industryId,
+        required: true
+      }, {
         headers: {
           ...accessHeader()
-        },
-        params: {
-          surveyId: currentQuestionnaire.value.id,
-          industryId: industryId,
-          required: true
         }
       });
     });
-    const responses = await Promise.all(requests);
-    // 检查所有响应状态
-    const allSuccess = responses.every(response => response.status === 200);
+
+    const responses = await Promise.allSettled(requests);
+    responses.forEach((response, index) => {
+      if (response.status === 'fulfilled') {
+        console.log(`Response for industryId ${selectedIndustries.value[index]}:`, response.value);
+      } else {
+        console.error(`Error for industryId ${selectedIndustries.value[index]}:`, response.reason);
+      }
+    });
+
+    const allSuccess = responses.every(response => response.status === 'fulfilled' && response.value.status === 200);
+
     if (allSuccess) {
-      ElMessage.success('问卷分发成功!')
+      ElMessage.success('问卷分发成功!');
+      console.log(currentQuestionnaire.value)
+      const index = questionnaires.findIndex(q => q.id === currentQuestionnaire.value.id);
+      if (index !== -1) {
+        questionnaires[index].isPublished = true;
+      }
+      setTimeout(() => {
+        location.reload();
+      }, 200);
     } else {
-      ElMessage.error('问卷分发失败!')
+      const failedRequests = responses.filter(response => response.status === 'rejected' || (response.status === 'fulfilled' && response.value.status !== 200));
+      console.error('分发失败的请求: ', failedRequests);
+      ElMessage.error('部分问卷分发失败!');
     }
   } catch (error) {
     console.error('分发失败: ', error);
+    ElMessage.error('问卷分发失败!');
   }
-}
+};
+
 
 const handleDownload = (questionnaire) => {
   console.log('Download:', questionnaire)
@@ -228,9 +289,23 @@ const handleDelete = async (questionnaire) => {
   }
 }
 
-const handleRemind = (questionnaire) => {
+// 提醒问卷逻辑
+const handleRemind = async (questionnaire) => {
+  questionnaire.status = 1;
   console.log('Remind:', questionnaire)
-  // todo 提醒问卷逻辑
+  
+  await request.put("/survey/updateSurvey", questionnaire, {
+    headers: {
+      'Authorization': `Bearer ${takeAccessToken()}`,
+      'Content-Type': 'application/json'
+    }
+  })
+
+  ElMessage({
+    type: 'success',
+    message: '已提醒用户',
+  })
+
 }
 
 const handleScroll = async (event) => {
@@ -269,9 +344,18 @@ const searchQuestionnaires = () => {
     </div>
 
     <div class="main" @scroll="handleScroll" ref="scrollContainer">
-      <questionnaire v-for="item in questionnaires" :key="item.id" :questionnaire="item" @edit="handleEdit(item.id)"
-        @share="handleShare" @download="handleDownload" @delete="handleDelete" @remind="handleRemind"
-        style="margin-bottom: 10px;"></questionnaire>
+      <questionnaire
+          v-for="item in questionnaires"
+          :key="item.id"
+          :questionnaire="item"
+          :isPublished="item.isPublished"
+          @edit="handleEdit($event)"
+          @share="handleShare"
+          @download="handleDownload"
+          @delete="handleDelete"
+          @remind="handleRemind"
+          style="margin-bottom: 10px;width: 80%"
+      ></questionnaire>
       <!-- <el-empty v-if="!hasMoreData && questionnaires.length === 0" description="没有更多问卷"></el-empty> -->
     </div>
 
@@ -334,8 +418,11 @@ const searchQuestionnaires = () => {
   }
 
   .main {
-    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     overflow-y: auto;
+    padding: 10px;
   }
 }
 </style>

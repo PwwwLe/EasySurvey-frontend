@@ -193,7 +193,6 @@ const submitQuestionnaire = () => {
         })
     })
 
-    //TODO 清空answer
     answers.value = [];
     // } else {
     //     ElMessage.warning("请至少填写一个题目");

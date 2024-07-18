@@ -1,6 +1,7 @@
 import {defineStore} from "pinia";
 import axios from "axios";
-import {ElMessage} from "element-plus";
+import {ElLoading, ElMessage} from "element-plus";
+import loadingService from "@/services/loadingService.js";
 
 const authItemName = 'access_token'
 
@@ -37,16 +38,19 @@ export const useStore = defineStore('general', {
             }
         },
         async logout(router) {
+            loadingService.showLoading('正在登出...')
             localStorage.removeItem(authItemName)
             sessionStorage.removeItem(authItemName)
             this.clearUser()
             ElMessage.success('成功登出！')
             try {
                 await router.push('/').then(() => {
+                    loadingService.hideLoading()
                     location.reload();
                 });
             } catch (error) {
-                console.log('路由跳转失败：', error)
+                loadingService.hideLoading()
+                console.log('登出失败：', error)
             }
         }
     }
