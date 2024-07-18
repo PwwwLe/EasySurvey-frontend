@@ -182,7 +182,7 @@ const submitSurvey = async () => {
     }
 
     ElMessage({
-      message: '问卷发布成功！',
+      message: '问卷创建成功！',
       type: 'success',
     });
 
