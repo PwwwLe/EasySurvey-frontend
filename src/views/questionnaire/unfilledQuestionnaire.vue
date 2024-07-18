@@ -4,7 +4,7 @@ import { computed, ref } from "vue";
 import Card from "@/components/Card.vue";
 import { Avatar } from "@element-plus/icons-vue";
 import QuestionnaireItem from "@/components/QuestionnaireItem.vue";
-import { get, post, getByUserId, getSurvey, createAnswers, createResponse } from "@/net";
+import { get, post, getByUserId, getSurvey, createAnswers, createResponse, getAnswerOfSurveyByUserId } from "@/net";
 import { format } from "date-fns";
 import { useRouter } from 'vue-router';
 import { ElMessage } from "element-plus";
@@ -24,6 +24,7 @@ const myUserId = ref(0);
 get("/api/user/userInfo", (data) => {
     console.log(data)
     myUserId.value = data.user.id;
+    //myUserId.value = 25;
     getByUserId('25', (data) => {
         console.log(data)
         console.log(data.data)
@@ -33,6 +34,9 @@ get("/api/user/userInfo", (data) => {
     })
 });
 
+getAnswerOfSurveyByUserId('12', '27', (data) => {
+    console.log(data)
+})
 
 // get(`api/answer/getMyAnswerList`, data => {
 //     mySubmittedQuestionnaireList.value = data;
@@ -67,8 +71,8 @@ const startWrite = async (item) => {
     console.log(currentQuestionnaire)
     console.log(currentQuestionnaire.value.id)
 
-    //getSurvey(item.id, (data) => {
-    getSurvey(12, (data) => {
+    getSurvey(item.id, (data) => {
+        //getSurvey(12, (data) => {
         console.log(data)
         currentQuestionnaireDetails.value = data.data;
         console.log(currentQuestionnaireDetails)
@@ -87,14 +91,6 @@ const answers = ref([]);//表单结果
 
 // TODO 对已经填写过的问卷进行提示操作,并且不让二次填写
 const back = () => {
-    get(`api/answer/getMyAnswerList`, data => {
-        mySubmittedQuestionnaireList.value = data;
-    });
-
-    get('api/questionnaire/activeQuestionnaireList', data => {
-        const isWriting = false; //开始填写问卷?
-        questionnaireList.value = data;
-    });
     isWriting.value = false;
     currentQuestionnaire.value = null;
     currentQuestionnaireDetails.value = null;
@@ -190,9 +186,12 @@ const submitQuestionnaire = () => {
         console.log(jsonResponse);
         createResponse(jsonResponse, (data) => {
             console.log(data);
+            if (data.code == 1) {
+                ElMessage.success("问卷提交成功！")
+                back()
+            }
         })
     })
-
 
     //TODO 清空answer
     answers.value = [];

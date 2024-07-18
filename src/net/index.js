@@ -407,6 +407,88 @@ export function createResponse(response, success, failure = defaultFailure) {
         .catch(err => failure(err));
 }
 
+export function getSurveySubmitProgress(surveyId, userId, success, failure = defaultFailure) {
+    const queryParams = {
+        surveyId: surveyId,
+        userId: userId
+    }
+    const url = '/api/response/getSurveySubmitProgress'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`
+        }
+    };
+
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl)
+            }
+        })
+        .catch(err => failure(err));
+}
+
+export function getSurveyCompletedProgress(surveyId, userId, success, failure = defaultFailure) {
+    const queryParams = {
+        surveyId: surveyId,
+        userId: userId
+    }
+    const url = '/api/response/getSurveyCompletedProgress'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`
+        }
+    };
+
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl)
+            }
+        })
+        .catch(err => failure(err));
+}
+
+export function getAnswerOfSurveyByUserId(surveyId, userId, success, failure = defaultFailure) {
+    const queryParams = {
+        surveyId: surveyId,
+        userId: userId
+    }
+    const url = '/api/answer/getAnswerOfSurveyByUserId'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`,
+            'Content-Type': 'application/json'
+        }
+    };
+
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl)
+            }
+        })
+        .catch(err => failure(err));
+}
+
 /**
  *
  * 获取请求头
@@ -455,6 +537,85 @@ function del(url, success, failure = defaultFailure) { // delete is a reserved w
  */
 function unauthorized() {
     return !takeAccessToken();
+}
+
+export function getNums(questionId, success, failure = defaultFailure) {
+    const queryParams = {
+        questionId: questionId
+    }
+    const url = '/api/answer/getNums'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    // console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`
+        }
+    };
+
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            // console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl)
+            }
+        })
+        .catch(err => failure(err));
+}
+
+export function getTextReport(questionId, success, failure = defaultFailure) {
+    const queryParams = {
+        questionId: questionId
+    }
+    const url = '/api/report/getReportForText'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    // console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`
+        }
+    };
+
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            // console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl)
+            }
+        })
+        .catch(err => failure(err));
+}
+
+export function getCrossReport(questionId1,questionId2, success, failure = defaultFailure) {
+    const queryParams = {
+        questionId1: questionId1,
+        questionId2:questionId2
+    }
+    const url = '/api/report/getReportForQuestion'
+    const queryString = new URLSearchParams(queryParams).toString();
+    const fullUrl = `${url}?${queryString}`
+    // console.log(fullUrl)
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${takeAccessToken()}`
+        }
+    };
+
+    axios.get(fullUrl, config)
+        .then(({ data }) => {
+            // console.log(data);
+            if (data.code === 1) {
+                success(data)
+            } else {
+                failure(data.msg, data.code, fullUrl)
+            }
+        })
+        .catch(err => failure(err));
 }
 
 export {

@@ -1,4 +1,4 @@
-import {createRouter, createWebHistory} from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -87,21 +87,30 @@ const router = createRouter({
                         title: '企业管理-问卷易'
                     },
                     component: () => import('@/views/admin/adminUser.vue'),
+                },
+                {
+                    path: 'analyze/:survey_id/:survey_title',
+                    name: 'analyze',
+                    meta: {
+                        // 页面标题title
+                        title: '问卷分析-问卷易'
+                    },
+                    component: () => import('@/views/admin/analyze.vue'),
                 }
             ]
         },
         {
-            path:"/createQuestionnaire",
+            path: "/createQuestionnaire",
             name: "createQuestionnaire",
             component: () => import('@/views/admin/createQuestionnaire.vue')
         },
         {
-            path:"/adminSearchQuestionnaire/:searchContent",
+            path: "/adminSearchQuestionnaire/:searchContent",
             name: "adminSearchQuestionnaire",
             component: () => import('@/views/admin/adminSearchQuestionnaire.vue')
         },
         {
-            path:"/editQuestionnaire/:questionnaireId",
+            path: "/editQuestionnaire/:questionnaireId",
             name: "editQuestionnaire",
             component: () => import('@/views/admin/editQuestionnaire.vue')
         }

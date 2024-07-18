@@ -1,11 +1,11 @@
 <script setup>
-import {ref, reactive, onMounted} from 'vue'
-import {useRouter} from 'vue-router'
-import {accessHeader, takeAccessToken} from "@/net";
-import {Search, Plus} from '@element-plus/icons-vue'
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { accessHeader, takeAccessToken } from "@/net";
+import { Search, Plus } from '@element-plus/icons-vue'
 import questionnaire from '@/components/questionnaire.vue'
 import request from '@/utils/request'
-import {ElMessage, ElMessageBox} from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from "axios";
 
 const router = useRouter()
@@ -50,7 +50,7 @@ const fetchIndustries = async () => {
   try {
     const response = await axios.get('/api/user/getAllIndustry')
     if (response.status === 200) {
-      industries.value = response.data.data.map(item => ({label: item.name, value: String(item.id)}))
+      industries.value = response.data.data.map(item => ({ label: item.name, value: String(item.id) }))
     } else {
       console.warn('返回状态出错!')
     }
@@ -88,7 +88,7 @@ const navigateToCreateQuestionnaire = () => {
 //编辑逻辑
 const handleEdit = (id) => {
   console.log('Edit:', id)
-  router.push({name: 'editQuestionnaire', params: {questionnaireId: id}}).then(() => {
+  router.push({ name: 'editQuestionnaire', params: { questionnaireId: id } }).then(() => {
     location.reload();
   });
 }
@@ -178,19 +178,24 @@ const handleDistribute = async () => {
 
 const handleDownload = (questionnaire) => {
   console.log('Download:', questionnaire)
-  // todo 分析&下载问卷逻辑
+  router.push({
+    name: 'analyze',
+    params: { survey_id: questionnaire.id, survey_title: questionnaire.title }
+  });
+  console.log('router:', router)
+  // 分析&下载问卷逻辑
 }
 
 const handleDelete = async (questionnaire) => {
   try {
     await ElMessageBox.confirm(
-        `确定要删除问卷 "${questionnaire.title}" 吗？`,
-        '删除问卷',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning',
-        }
+      `确定要删除问卷 "${questionnaire.title}" 吗？`,
+      '删除问卷',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
     )
 
     const config = {
@@ -229,7 +234,7 @@ const handleRemind = (questionnaire) => {
 }
 
 const handleScroll = async (event) => {
-  const {scrollTop, clientHeight, scrollHeight} = event.target
+  const { scrollTop, clientHeight, scrollHeight } = event.target
 
   if (scrollTop + clientHeight >= scrollHeight - 10) {
     count.value++
@@ -239,7 +244,7 @@ const handleScroll = async (event) => {
 }
 
 const searchQuestionnaires = () => {
-  router.push({name: 'adminSearchQuestionnaire', params: {searchContent: searchContent.value}}).then(() => {
+  router.push({ name: 'adminSearchQuestionnaire', params: { searchContent: searchContent.value } }).then(() => {
     location.reload();
   });
 };
@@ -249,42 +254,24 @@ const searchQuestionnaires = () => {
   <div class="out">
     <div class="header">
       <div class="header-left">
-        <el-button
-            type="primary"
-            :icon="Plus"
-            @click="navigateToCreateQuestionnaire"
-            style="margin-left: 15px;"
-        >
+        <el-button type="primary" :icon="Plus" @click="navigateToCreateQuestionnaire" style="margin-left: 15px;">
           创建问卷
         </el-button>
       </div>
       <div>
-        <el-input
-            v-model="searchContent"
-            style="max-width: 600px"
-            placeholder="请输入问卷标题"
-            class="input-with-select"
-            @keyup.enter="searchQuestionnaires"
-        >
+        <el-input v-model="searchContent" style="max-width: 600px" placeholder="请输入问卷标题" class="input-with-select"
+          @keyup.enter="searchQuestionnaires">
           <template #append>
-            <el-button :icon="Search"/>
+            <el-button :icon="Search" />
           </template>
         </el-input>
       </div>
     </div>
 
     <div class="main" @scroll="handleScroll" ref="scrollContainer">
-      <questionnaire
-          v-for="item in questionnaires"
-          :key="item.id"
-          :questionnaire="item"
-          @edit="handleEdit(item.id)"
-          @share="handleShare"
-          @download="handleDownload"
-          @delete="handleDelete"
-          @remind="handleRemind"
-          style="margin-bottom: 10px;"
-      ></questionnaire>
+      <questionnaire v-for="item in questionnaires" :key="item.id" :questionnaire="item" @edit="handleEdit(item.id)"
+        @share="handleShare" @download="handleDownload" @delete="handleDelete" @remind="handleRemind"
+        style="margin-bottom: 10px;"></questionnaire>
       <!-- <el-empty v-if="!hasMoreData && questionnaires.length === 0" description="没有更多问卷"></el-empty> -->
     </div>
 
@@ -308,31 +295,15 @@ const searchQuestionnaires = () => {
         </div>
         <el-divider content-position="center"> 选择发布的行业</el-divider>
         <div style="text-align: center">
-          <el-select
-              v-model="selectedIndustries"
-              multiple
-              clearable
-              collapse-tags
-              placeholder="选择"
-              popper-class="custom-header"
-              :max-collapse-tags="1"
-              style="width: 240px"
-          >
+          <el-select v-model="selectedIndustries" multiple clearable collapse-tags placeholder="选择"
+            popper-class="custom-header" :max-collapse-tags="1" style="width: 240px">
             <template #header>
-              <el-checkbox
-                  v-model="checkAll"
-                  :indeterminate="indeterminate"
-                  @change="handleCheckAll"
-              >
+              <el-checkbox v-model="checkAll" :indeterminate="indeterminate" @change="handleCheckAll">
                 选择全部
               </el-checkbox>
             </template>
-            <el-option
-                v-for="industry in industries"
-                :key="industry.value"
-                :label="industry.label"
-                :value="industry.value"
-            />
+            <el-option v-for="industry in industries" :key="industry.value" :label="industry.label"
+              :value="industry.value" />
           </el-select>
           <el-button type="primary" @click="handleDistribute">分发问卷</el-button>
         </div>

@@ -1,8 +1,8 @@
 <script setup>
-import {computed, reactive, ref} from "vue";
-import {ChatDotSquare, CircleCheck, Lock, Message, User} from "@element-plus/icons-vue";
-import {login, get, post, Register, getInfo} from "@/net";
-import {ElMessage} from "element-plus";
+import { computed, reactive, ref } from "vue";
+import { ChatDotSquare, CircleCheck, Lock, Message, User } from "@element-plus/icons-vue";
+import { login, get, post, Register, getInfo } from "@/net";
+import { ElMessage } from "element-plus";
 import router from "@/router";
 import axios from "axios";
 
@@ -15,13 +15,13 @@ const loginForm = reactive({
 
 const loginRule = {
   username: [
-    {required: true, message: '请输入用户名'}
+    { required: true, message: '请输入用户名' }
   ],
   password: [
-    {required: true, message: '请输入密码'}
+    { required: true, message: '请输入密码' }
   ],
   role: [
-    {required: true, message: '请输入role'}
+    { required: true, message: '请输入role' }
   ]
 }
 
@@ -33,14 +33,26 @@ function userLogin() {
       login(loginForm.username, loginForm.password, loginForm.role, () => {
         getInfo((data) => {
           console.log(data)
-          if (data.user.role == 0)
-            router.push('/user').then(() => {
-              location.reload();
-            });
-          else
-            router.push('/admin').then(() => {
-              location.reload();
-            });
+          if (data.user.role == 0) {
+            if (loginForm.role == 0) {
+              router.push('/user').then(() => {
+                location.reload();
+              });
+            }
+            else {
+              ElMessage.warning("该账号不是用户账号")
+            }
+          }
+          else {
+            if (loginForm.role == 1) {
+              router.push('/admin').then(() => {
+                location.reload();
+              });
+            }
+            else {
+              ElMessage.warning("该账号不是管理员账号")
+            }
+          }
         })
       })
     }
@@ -94,14 +106,14 @@ const validatePassword = (registerRule, value, callback) => {
 
 const registerRule = {
   username: [
-    {validator: validateUsername, trigger: ['blur', 'change']}
+    { validator: validateUsername, trigger: ['blur', 'change'] }
   ],
   password: [
-    {required: true, message: '请输入密码', trigger: 'blur'},
-    {min: 6, max: 16, message: '密码的长度必须在6-16个字符之间', trigger: ['blur', 'change']}
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, max: 16, message: '密码的长度必须在6-16个字符之间', trigger: ['blur', 'change'] }
   ],
   password_repeat: [
-    {validator: validatePassword, trigger: ['blur', 'change']},
+    { validator: validatePassword, trigger: ['blur', 'change'] },
   ]
 }
 
@@ -156,7 +168,7 @@ const getCaptcha = async () => {
               <el-input v-model="registerForm.username" maxlength="10" type="text" placeholder="用户名">
                 <template #prefix>
                   <el-icon>
-                    <User/>
+                    <User />
                   </el-icon>
                 </template>
               </el-input>
@@ -165,7 +177,7 @@ const getCaptcha = async () => {
               <el-input v-model="registerForm.password" maxlength="20" type="password" placeholder="密码">
                 <template #prefix>
                   <el-icon>
-                    <Lock/>
+                    <Lock />
                   </el-icon>
                 </template>
               </el-input>
@@ -174,7 +186,7 @@ const getCaptcha = async () => {
               <el-input v-model="registerForm.password_repeat" maxlength="20" type="password" placeholder="确认密码">
                 <template #prefix>
                   <el-icon>
-                    <Lock/>
+                    <Lock />
                   </el-icon>
                 </template>
               </el-input>
@@ -188,7 +200,7 @@ const getCaptcha = async () => {
                 </template>
               </el-input>
               <img v-if="captchaImage" :src="`data:image/png;base64,${captchaImage}`" alt="Captcha" @click="getCaptcha"
-                   style="cursor: pointer; margin-top: 20px"/>
+                style="cursor: pointer; margin-top: 20px" />
             </el-form-item>
           </el-form>
           <div style="margin-top: 20px;">
@@ -203,15 +215,15 @@ const getCaptcha = async () => {
           <el-form :model="loginForm" :rules="loginRule" ref="loginFormRef">
             <el-form-item prop="role" style="width: 220px">
               <el-select v-model="loginForm.role">
-                <el-option value="0" label="用户"/>
-                <el-option value="1" label="管理员"/>
+                <el-option value="0" label="用户" />
+                <el-option value="1" label="管理员" />
               </el-select>
             </el-form-item>
             <el-form-item prop="username">
               <el-input v-model="loginForm.username" maxlength="25" type="text" placeholder="用户名">
                 <template #prefix>
                   <el-icon>
-                    <User/>
+                    <User />
                   </el-icon>
                 </template>
               </el-input>
@@ -220,7 +232,7 @@ const getCaptcha = async () => {
               <el-input v-model="loginForm.password" type="password" maxlength="20" placeholder="密码">
                 <template #prefix>
                   <el-icon>
-                    <Lock/>
+                    <Lock />
                   </el-icon>
                 </template>
               </el-input>
