@@ -7,6 +7,7 @@ import question from '@/components/question.vue';
 import {useRouter} from 'vue-router';
 import request from '@/utils/request.js';
 import {takeAccessToken} from "@/net";
+import loadingService from "@/services/loadingService.js";
 
 const router = useRouter();
 const surveyData = ref({
@@ -106,6 +107,7 @@ const submitSurvey = async () => {
   }
 
   try {
+    loadingService.showLoading('正在创建...')
     console.log("创建问卷");
     console.log(surveyData.value);
 
@@ -199,7 +201,7 @@ const submitSurvey = async () => {
     };
 
     router.push({name: 'adminQuestionnaire'}).then(() => {
-      location.reload();
+      loadingService.hideLoading()
     });
   } catch (error) {
     ElMessage.error('发布问卷时出错，请重试');

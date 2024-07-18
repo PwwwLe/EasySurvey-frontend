@@ -3,6 +3,7 @@ import {reactive} from "vue";
 import {get, getImage} from "@/net";
 import router from "@/router";
 import {ElAvatar, ElCard, ElRow, ElCol, ElTag} from 'element-plus';
+import loadingService from "@/services/loadingService.js";
 
 // 基本个人信息
 const user = reactive({
@@ -51,8 +52,9 @@ function getBasicInfo() {
 }
 
 function ToChangeBasicInfo() {
+  loadingService.showLoading('正在跳转...')
   router.push('/user/changeBasicInfo').then(() => {
-    location.reload();
+    loadingService.hideLoading()
   });
 }
 

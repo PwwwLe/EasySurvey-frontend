@@ -38,21 +38,25 @@ function userLogin() {
           if (data.user.role == 0) {
             if (loginForm.role == 0) {
               router.push('/user').then(() => {
-                location.reload();
+                location.reload()
+                loadingService.hideLoading()
               });
             }
             else {
-              ElMessage.warning("该账号不是用户账号")
+              ElMessage.warning("该账号不是管理员账号")
+              loadingService.hideLoading()
             }
           }
           else {
             if (loginForm.role == 1) {
               router.push('/admin').then(() => {
-                location.reload();
+                location.reload()
+                loadingService.hideLoading()
               });
             }
             else {
-              ElMessage.warning("该账号不是管理员账号")
+              ElMessage.warning("该账号不是用户账号")
+              loadingService.hideLoading()
             }
           }
         })

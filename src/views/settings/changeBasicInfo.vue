@@ -63,10 +63,9 @@ function saveInfo() {
         businessScope: editData.businessScope
       },
       () => {
-        loadingService.hideLoading()
         ElMessage.success('基本资料修改成功！');
         router.push('/user/basicInfo').then(() => {
-          location.reload();
+          loadingService.hideLoading()
         });
       },
       (error) => {

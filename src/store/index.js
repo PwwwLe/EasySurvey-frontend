@@ -46,7 +46,6 @@ export const useStore = defineStore('general', {
             try {
                 await router.push('/').then(() => {
                     loadingService.hideLoading()
-                    location.reload();
                 });
             } catch (error) {
                 loadingService.hideLoading()

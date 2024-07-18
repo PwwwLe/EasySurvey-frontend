@@ -7,6 +7,7 @@ import questionnaire from '@/components/questionnaire.vue'
 import request from '@/utils/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from "axios";
+import loadingService from "@/services/loadingService.js";
 
 const router = useRouter()
 const searchContent = ref('')
@@ -15,6 +16,7 @@ let count = ref(1)
 
 const fetchQuestionnaires = async () => {
   try {
+    loadingService.showLoading('正在加载...')
     const response = await request.get('/survey/getSeveral', {
       headers: {
         ...accessHeader()
@@ -48,6 +50,7 @@ const fetchQuestionnaires = async () => {
         endTime: item.endTime ? formatDateTime(item.endTime) : item.endTime,
       }
     }));
+    loadingService.hideLoading()
   } catch (error) {
     console.error('Error fetching questionnaires:', error);
     ElMessage({
@@ -112,8 +115,9 @@ const formatDateTime = (time) => {
 }
 
 const navigateToCreateQuestionnaire = () => {
+  loadingService.showLoading('正在跳转...')
   router.push('/createQuestionnaire').then(() => {
-    location.reload();
+    loadingService.hideLoading()
   });
 }
 
@@ -179,6 +183,7 @@ const handleCheckAll = () => {
 
 const handleDistribute = async () => {
   try {
+    loadingService.showLoading('分发问卷中...')
     await fetchDistributedIndustries();
 
     const industriesToDistribute = ref(
@@ -223,6 +228,7 @@ const handleDistribute = async () => {
         questionnaires[index].isPublished = true;
       }
       setTimeout(() => {
+        loadingService.hideLoading()
         location.reload();
       }, 200);
     } else {
@@ -292,20 +298,14 @@ const handleDelete = async (questionnaire) => {
 // 提醒问卷逻辑
 const handleRemind = async (questionnaire) => {
   questionnaire.status = 1;
-  console.log('Remind:', questionnaire)
-  
+
   await request.put("/survey/updateSurvey", questionnaire, {
     headers: {
-      'Authorization': `Bearer ${takeAccessToken()}`,
-      'Content-Type': 'application/json'
+      ...accessHeader()
     }
   })
 
-  ElMessage({
-    type: 'success',
-    message: '已提醒用户',
-  })
-
+  ElMessage.success('已提醒用户')
 }
 
 const handleScroll = async (event) => {
@@ -319,8 +319,9 @@ const handleScroll = async (event) => {
 }
 
 const searchQuestionnaires = () => {
+  loadingService.showLoading('正在搜索...')
   router.push({ name: 'adminSearchQuestionnaire', params: { searchContent: searchContent.value } }).then(() => {
-    location.reload();
+    loadingService.hideLoading()
   });
 };
 </script>

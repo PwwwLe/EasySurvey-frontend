@@ -4,6 +4,7 @@ import axios from "axios";
 import {ElMessage, ElMessageBox} from "element-plus";
 import {Search} from "@element-plus/icons-vue";
 import {accessHeader} from "@/net/index.js";
+import loadingService from "@/services/loadingService.js";
 
 // dev 用
 let userData = ref([])
@@ -16,6 +17,7 @@ const isSearching = ref(false)
 
 const fetchUserData = async (pageNum = 1, pageSize = 10) => {
   try {
+    loadingService.showLoading('正在加载...')
     const response = await axios.get(`/api/admin/selectAll?pageNum=${pageNum}&pageSize=${pageSize}`, {
       headers: {
         ...accessHeader()
@@ -30,8 +32,10 @@ const fetchUserData = async (pageNum = 1, pageSize = 10) => {
       item.user.updateTime = item.user.updateTime ? formatDateTime(item.user.updateTime) : item.user.createTime
       return item
     })
+    loadingService.hideLoading()
   } catch (error) {
     console.error('读取用户数据时发生错误: ', error);
+    loadingService.hideLoading()
   }
 }
 
@@ -101,7 +105,6 @@ const handleAdd = async () => {
       password: user.password
     }, {
       headers: {
-        'Content-Type': 'application/json',
         ...accessHeader()
       }
     });
