@@ -46,7 +46,7 @@ const getProgress = async () => {
         surveyId: props.questionnaire.id
       }
     })
-    console.log('填写进度返回: ', response)
+    // console.log('填写进度返回: ', response)
     percentage.value = response.data.data * 100
   } catch (error) {
     console.error('获取填写进度失败: ', error)

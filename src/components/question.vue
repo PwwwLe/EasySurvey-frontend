@@ -21,13 +21,16 @@ const updateOption = (index, event) => {
   emits('update-question', localQuestion.value);
 };
 
-const addOption = () => {
-  localQuestion.value.options.push({id:-Date.now(), text: '', line_num: localQuestion.value.options.length + 1 });
+const addOption = async () => {
+  localQuestion.value.options.push({ id: -Date.now(), text: '', line_num: localQuestion.value.options.length + 1 });
+  await nextTick();
+  optionInputRefs.value.push(null); // 添加新的空 ref 占位符
   emits('update-question', localQuestion.value);
 };
 
 const removeOption = (index) => {
   localQuestion.value.options.splice(index, 1);
+  optionInputRefs.value.splice(index, 1); // 同时移除相应的 ref
   localQuestion.value.options.forEach((option, i) => {
     option.line_num = i + 1;
   });
@@ -53,9 +56,9 @@ const updateTitle = (value) => {
   emits('update-question', localQuestion.value);
 };
 
-const updateRequire = () =>{
+const updateRequire = () => {
   emits('update-question', localQuestion.value);
-}
+};
 
 const getQuestionTypeLabel = (type) => {
   switch (type) {
@@ -83,6 +86,7 @@ const questionTitleInputRef = ref(null);
 const editQuestionTitle = async () => {
   isEditingQuestionTitle.value = true;
   await nextTick();
+  console.log(questionTitleInputRef.value)
   questionTitleInputRef.value.focus();
   questionTitleInputRef.value.select();
 };
@@ -97,40 +101,41 @@ const optionInputRefs = ref([]);
 const editOption = async (index) => {
   isEditingOptions.value[index] = true;
   await nextTick();
-  optionInputRefs.value[index].focus();
-  optionInputRefs.value[index].select();
+  console.log(optionInputRefs.value[index])
+  if (optionInputRefs.value[index]) {
+    optionInputRefs.value[index].focus();
+    optionInputRefs.value[index].select();
+  }
 };
 
 const saveOption = (index) => {
   isEditingOptions.value[index] = false;
 };
-
 </script>
 
 <template>
   <div class="question-component" :class="{ 'editing': props.isEditing }" @click="toggleEditing">
     <div class="question-title">
       <div @click="editQuestionTitle" v-if="!isEditingQuestionTitle">
-        <el-text class="editable-text">{{ localQuestion.title || '点击修改题目标题' }}</el-text>
+        <el-text class="editable-text-title">{{ localQuestion.title || '点击修改题目标题' }}</el-text>
         <span class="question-type">{{ getQuestionTypeLabel(localQuestion.type) }}</span>
       </div>
       <el-input v-model="localQuestion.title" v-if="isEditingQuestionTitle" placeholder="题目标题" @blur="saveQuestionTitle"
         class="title-input" ref="questionTitleInputRef" @input="updateTitle($event)" />
     </div>
-    <div
-      v-if="localQuestion.type === 1 || localQuestion.type === 2 || localQuestion.type === 4 || localQuestion.type === 5">
+    <div v-if="localQuestion.type === 1 || localQuestion.type === 2 || localQuestion.type === 4 || localQuestion.type === 5">
       <div v-for="(option, index) in localQuestion.options" :key="index" class="option" @click="editOption(index)">
         <div class="option-text">
-          <div v-if="!isEditingOptions[index]" class="editable-text">
+          <div v-if="!isEditingOptions[index]" class="editable-text-option">
             <el-text>{{ option.text || '点击修改选项' }}</el-text>
           </div>
           <el-input v-model="localQuestion.options[index].text" v-if="isEditingOptions[index]" placeholder="选项"
             @blur="saveOption(index)" ref="el => optionInputRefs.value[index] = el"
             @input="updateOption(index, $event)" />
         </div>
-        <el-button class="deleteButton" :icon="Delete" @click="removeOption(index)">删除选项</el-button>
+        <el-button class="deleteButton" :icon="Delete" type="primary" @click="removeOption(index)"></el-button>
       </div>
-      <el-button :icon="Plus" @click="addOption">添加选项</el-button>
+      <el-button :icon="Plus" type="primary" @click="addOption"></el-button>
     </div>
     <div v-if="localQuestion.type === 3">
       <el-input type="textarea" placeholder="这是一个简答题" disabled />
@@ -139,7 +144,7 @@ const saveOption = (index) => {
       <el-checkbox v-model="localQuestion.required" @change="updateRequire">
         是否必答
       </el-checkbox>
-      <el-button :icon="Delete" @click="deleteQuestion">删除题目</el-button>
+      <el-button :icon="Delete" type="primary" @click="deleteQuestion">删除题目</el-button>
     </div>
   </div>
 </template>
@@ -176,14 +181,27 @@ const saveOption = (index) => {
   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
 }
 
-.editable-text {
+.editable-text-title {
+  cursor: pointer;
+  border: 3px solid transparent;
+  border-radius: 4px;
+  transition: border-color 0.3s;
+  font-weight: bold;
+  font-size: large
+}
+
+.editable-text-title:hover {
+  border-color: #dcdfe6;
+}
+
+.editable-text-option {
   cursor: pointer;
   border: 3px solid transparent;
   border-radius: 4px;
   transition: border-color 0.3s;
 }
 
-.editable-text:hover {
+.editable-text-title:hover {
   border-color: #dcdfe6;
 }
 
