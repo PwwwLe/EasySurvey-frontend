@@ -110,7 +110,7 @@ const navigateToCreateQuestionnaire = () => {
 //编辑逻辑
 const handleEdit = (questionnaire) => {
   // console.log('Edit:', questionnaire)
-  router.push({ name: 'editQuestionnaire', params: { questionnaire:JSON.stringify(questionnaire) } });
+  router.push({name: 'editQuestionnaire', params: {questionnaire: JSON.stringify(questionnaire)}});
 }
 
 const shareDrawerVisible = ref(false)
@@ -283,9 +283,9 @@ const handleRemind = async (questionnaire) => {
   })
 
   ElMessage({
-        type: 'success',
-        message: '已提醒用户',
-      })
+    type: 'success',
+    message: '已提醒用户',
+  })
 
 }
 
